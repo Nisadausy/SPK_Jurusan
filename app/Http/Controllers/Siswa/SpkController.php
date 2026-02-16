@@ -1,14 +1,12 @@
 <?php
 
 namespace App\Http\Controllers\Siswa;
-
 use App\Http\Controllers\Controller;
 use App\Models\HasilSaw;
 use App\Models\JawabanMinat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
 class SpkController extends Controller
 {
     private array $kriteria = [
@@ -21,24 +19,31 @@ class SpkController extends Controller
         ['id' => 'fisika', 'nama' => 'Nilai Fisika'],
     ];
 
-    public function index()
-    {
-        $siswa = Auth::guard('siswa')->user();
+        public function index()
+        {
+            $siswa = Auth::guard('siswa')->user();
 
-        $riwayat = HasilSaw::where('siswa_id', $siswa->id)
-            ->orderByDesc('created_at')
-            ->first();
+            // 🔒 PENGAMAN (INI YANG KURANG)
+            if (!$siswa) {
+                return redirect()->route('login')
+                    ->withErrors('Silakan login sebagai siswa');
+            }
 
-        return view('siswa.tes', [
-            'siswa'   => $siswa,
-            'riwayat' => $riwayat,
-        ]);
-    }
+            $riwayat = HasilSaw::whereHas('tes', function ($q) use ($siswa) {
+                    $q->where('siswa_id', $siswa->id);
+                })
+                ->orderByDesc('created_at')
+                ->first();
+
+            return view('siswa.tes', compact('siswa', 'riwayat'));
+        }
+
+
 
 
     public function store(Request $request)
     {
-        $siswa = Auth::guard('siswa')->user(); // ✅ WAJIB ADA
+        $siswa = Auth::user(); // ✅ WAJIB ADA
 
         $request->validate([
             'jawaban' => 'required|array|min:10',

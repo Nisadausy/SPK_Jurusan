@@ -15,10 +15,11 @@ class HasilSaw extends Model
         'peringkat'
     ];
 
-    public function tes()
-    {
-        return $this->belongsTo(Tes::class);
-    }
+   public function tes()
+{
+    return $this->belongsTo(Tes::class, 'tes_id');
+}
+
 
     public function jurusan()
     {

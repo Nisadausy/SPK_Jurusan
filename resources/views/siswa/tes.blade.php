@@ -1,742 +1,882 @@
-{{-- resources/views/siswa/tes.blade.php --}}
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tes Minat & Bakat — SPK</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<x-app-layout>
+    <x-slot name="header"></x-slot>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg: #0d0f14;
-            --surface: #161921;
-            --surface2: #1e2330;
-            --border: #2a2f3e;
-            --accent: #f4b942;
-            --accent2: #e07b54;
-            --text: #e8eaf0;
-            --text-dim: #8892aa;
-            --green: #5cb85c;
-            --red: #e05454;
-            --radius: 16px;
+            --primary: #1a3c6e;
+            --primary-dark: #0f2548;
+            --accent: #e8a020;
+            --accent-light: #fcd34d;
+            --bg: #f0f4fa;
+            --success: #10b981;
+        }
+        * { font-family: 'Poppins', sans-serif; box-sizing: border-box; }
+        body { background: var(--bg); }
+
+        /* ===== LAYOUT ===== */
+        .spk-wrapper { min-height: 100vh; background: var(--bg); }
+        .spk-header { background: var(--primary-dark); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .spk-container { max-width: 780px; margin: 0 auto; padding: 32px 16px 60px; }
+
+        /* ===== STEPPER ===== */
+        .stepper { display: flex; align-items: center; gap: 0; margin-bottom: 36px; }
+        .step-item-nav { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; position: relative; cursor: pointer; }
+        .step-item-nav::after {
+            content: '';
+            position: absolute;
+            top: 19px; left: 50%;
+            width: 100%; height: 2px;
+            background: #dde3ef;
+            z-index: 0;
+        }
+        .step-item-nav:last-child::after { display: none; }
+        .step-circle {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            border: 2px solid #dde3ef;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700;
+            color: #9ca3af;
+            position: relative; z-index: 1;
+            transition: all 0.3s ease;
+        }
+        .step-item-nav.active .step-circle { border-color: var(--accent); background: var(--accent); color: var(--primary-dark); }
+        .step-item-nav.done .step-circle { border-color: var(--success); background: var(--success); color: white; }
+        .step-item-nav.done::after, .step-item-nav.active::after { background: var(--success); }
+        .step-label { font-size: 0.65rem; font-weight: 600; color: #9ca3af; text-align: center; line-height: 1.2; }
+        .step-item-nav.active .step-label { color: var(--accent); }
+        .step-item-nav.done .step-label { color: var(--success); }
+
+        /* ===== CARD ===== */
+        .spk-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(26,60,110,0.08);
+            overflow: hidden;
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            padding: 28px 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+        }
+        .card-header-step { font-size: 0.7rem; font-weight: 600; color: var(--accent-light); margin-bottom: 4px; }
+        .card-header-title { font-size: 1.25rem; font-weight: 800; color: white; }
+        .card-header-sub { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-top: 4px; }
+        .card-body { padding: 28px 32px; }
+
+        /* ===== FORM ELEMENTS ===== */
+        .form-label { font-size: 0.78rem; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
+        .form-label span.req { color: #ef4444; }
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e5eaf3;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            color: #1e2a3a;
+            background: #f8fafc;
+            transition: all 0.2s;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+        }
+        .form-input:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(232,160,32,0.12); }
+        .form-input.error { border-color: #ef4444; }
+        .form-hint { font-size: 0.7rem; color: #9ca3af; margin-top: 4px; }
+        .form-error { font-size: 0.7rem; color: #ef4444; margin-top: 4px; display: none; }
+        .form-group { margin-bottom: 20px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+        /* ===== RADIO CARDS (bakat) ===== */
+        .radio-card-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .radio-card {
+            flex: 1; min-width: 120px;
+            border: 1.5px solid #e5eaf3;
+            border-radius: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 10px;
+            background: #f8fafc;
+        }
+        .radio-card:hover { border-color: var(--accent); background: #fffbeb; }
+        .radio-card input[type="radio"] { accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
+        .radio-card.selected { border-color: var(--accent); background: #fffbeb; box-shadow: 0 0 0 3px rgba(232,160,32,0.12); }
+        .radio-card-label { font-size: 0.78rem; font-weight: 500; color: #374151; }
+
+        /* ===== TOGGLE (buta warna) ===== */
+        .toggle-group { display: flex; gap: 10px; }
+        .toggle-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1.5px solid #e5eaf3;
+            border-radius: 10px;
+            font-size: 0.78rem; font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            background: #f8fafc;
+            color: #6b7280;
+        }
+        .toggle-btn.selected-yes { border-color: #ef4444; background: #fef2f2; color: #dc2626; }
+        .toggle-btn.selected-no { border-color: var(--success); background: #f0fdf4; color: #059669; }
+
+        /* ===== NILAI INPUT ===== */
+        .nilai-card {
+            background: #f8fafc;
+            border: 1.5px solid #e5eaf3;
+            border-radius: 12px;
+            padding: 14px 16px;
+            transition: border-color 0.2s;
+        }
+        .nilai-card:focus-within { border-color: var(--accent); background: white; }
+        .nilai-label { font-size: 0.7rem; font-weight: 700; color: #6b7280; margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+        .nilai-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem; font-weight: 700;
+            color: var(--primary-dark);
+            background: transparent;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+        }
+        .nilai-scale { font-size: 0.65rem; color: #9ca3af; margin-top: 2px; }
+
+        /* ===== BAKAT QUESTION ===== */
+        .bakat-question {
+            background: #f8fafc;
+            border: 1.5px solid #e5eaf3;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            transition: border-color 0.2s;
+        }
+        .bakat-question.answered { border-color: #d1fae5; background: #f0fdf4; }
+        .bakat-q-text { font-size: 0.82rem; font-weight: 600; color: #1e2a3a; margin-bottom: 12px; line-height: 1.5; }
+        .bakat-q-num { font-size: 0.7rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+        .bakat-options { display: flex; gap: 8px; flex-wrap: wrap; }
+        .bakat-opt {
+            flex: 1; min-width: 100px;
+            padding: 8px 12px;
+            border: 1.5px solid #e5eaf3;
+            border-radius: 8px;
+            font-size: 0.75rem; font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            background: white;
+            color: #6b7280;
+        }
+        .bakat-opt:hover { border-color: var(--accent); color: var(--primary-dark); }
+        .bakat-opt.selected { border-color: var(--accent); background: var(--accent); color: var(--primary-dark); font-weight: 700; }
+        .bakat-opt input { display: none; }
+
+        /* ===== SYARAT FISIK ALERT ===== */
+        .syarat-alert {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 0.75rem;
+            color: #92400e;
+            margin-bottom: 20px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* ===== NAVIGATION BUTTONS ===== */
+        .btn-nav { display: flex; gap: 12px; justify-content: space-between; margin-top: 28px; padding-top: 20px; border-top: 1px solid #f0f4fa; }
+        .btn-prev {
+            padding: 12px 24px;
+            border: 1.5px solid #e5eaf3;
+            border-radius: 12px;
+            font-size: 0.82rem; font-weight: 600;
+            color: #6b7280;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap-8px;
+        }
+        .btn-prev:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-next {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.82rem; font-weight: 700;
+            color: var(--primary-dark);
+            background: var(--accent);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 8px;
+            margin-left: auto;
+        }
+        .btn-next:hover { background: var(--accent-light); transform: translateY(-1px); }
+        .btn-submit {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem; font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex; align-items: center; gap: 8px;
+            margin-left: auto;
+            box-shadow: 0 4px 16px rgba(26,60,110,0.3);
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,60,110,0.4); }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+        /* ===== PROGRESS BAR ===== */
+        .progress-wrapper { margin-bottom: 12px; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 0.7rem; color: #9ca3af; margin-bottom: 6px; }
+        .progress-track { height: 6px; background: #e5eaf3; border-radius: 99px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; }
 
-        /* BG */
-        .bg-grain {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-            opacity: 0.5;
-        }
-        .bg-glow  { position:fixed; top:-200px; left:-200px; width:700px; height:700px; background:radial-gradient(ellipse,rgba(244,185,66,.08) 0%,transparent 70%); pointer-events:none; z-index:0; }
-        .bg-glow2 { position:fixed; bottom:-150px; right:-150px; width:500px; height:500px; background:radial-gradient(ellipse,rgba(224,123,84,.07) 0%,transparent 70%); pointer-events:none; z-index:0; }
+        /* ===== REVIEW SECTION ===== */
+        .review-section { margin-bottom: 20px; }
+        .review-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 10px; }
+        .review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .review-item { background: #f8fafc; border-radius: 10px; padding: 10px 14px; }
+        .review-item-label { font-size: 0.68rem; color: #9ca3af; margin-bottom: 2px; }
+        .review-item-value { font-size: 0.82rem; font-weight: 700; color: var(--primary-dark); }
 
-        /* LAYOUT */
-        .container { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:40px 20px 80px; }
-
-        /* HEADER */
-        .page-header { text-align:center; margin-bottom:48px; animation:fadeDown .7s ease both; }
-        .badge {
-            display:inline-flex; align-items:center; gap:8px;
-            background:rgba(244,185,66,.12); border:1px solid rgba(244,185,66,.25);
-            color:var(--accent); font-size:12px; font-weight:600; letter-spacing:.1em;
-            text-transform:uppercase; padding:6px 16px; border-radius:100px; margin-bottom:20px;
-        }
-        .page-title {
-            font-family:'Playfair Display',serif;
-            font-size:clamp(2rem,5vw,3.2rem); font-weight:900; line-height:1.15;
-            background:linear-gradient(135deg,#f4b942,#e8eaf0 60%);
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-            margin-bottom:12px;
-        }
-        .page-sub { color:var(--text-dim); font-size:15px; max-width:500px; margin:0 auto; }
-
-        /* ALERT */
-        .alert {
-            border-radius:12px; padding:14px 18px; margin-bottom:24px;
-            font-size:14px; font-weight:500; display:flex; align-items:flex-start; gap:10px;
-        }
-        .alert-error   { background:rgba(224,84,84,.12); border:1px solid rgba(224,84,84,.3); color:#f08080; }
-        .alert-success { background:rgba(92,184,92,.12); border:1px solid rgba(92,184,92,.3); color:#7dcc7d; }
-        .alert-info    { background:rgba(244,185,66,.10); border:1px solid rgba(244,185,66,.25); color:var(--accent); }
-        .alert ul { padding-left:18px; margin-top:6px; }
-        .alert ul li { margin-bottom:3px; }
-
-        /* PROGRESS */
-        .progress-bar-wrap { background:var(--surface2); border-radius:100px; height:6px; margin-bottom:10px; overflow:hidden; }
-        .progress-bar-fill { height:100%; border-radius:100px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .5s cubic-bezier(.4,0,.2,1); }
-        .progress-label { display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:32px; }
-
-        /* STEPS */
-        .step { display:none; animation:fadeIn .5s ease both; }
-        .step.active { display:block; }
-
-        /* STEP INDICATOR */
-        .step-indicators {
-            display:flex; justify-content:center; gap:8px; margin-bottom:40px;
-        }
-        .step-dot {
-            width:32px; height:32px; border-radius:50%; border:2px solid var(--border);
-            display:flex; align-items:center; justify-content:center;
-            font-size:12px; font-weight:700; color:var(--text-dim);
-            transition:all .3s;
-        }
-        .step-dot.active { border-color:var(--accent); background:rgba(244,185,66,.15); color:var(--accent); }
-        .step-dot.done   { border-color:var(--green); background:rgba(92,184,92,.15); color:var(--green); }
-        .step-line { width:40px; height:2px; background:var(--border); align-self:center; transition:background .3s; }
-        .step-line.done { background:var(--green); }
-
-        /* CARD */
-        .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px; margin-bottom:24px; box-shadow:0 4px 40px rgba(0,0,0,.3); }
-        .card-title { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--accent); margin-bottom:6px; }
-        .card-desc { font-size:13px; color:var(--text-dim); margin-bottom:24px; }
-
-        /* SECTION LABEL */
-        .section-label {
-            font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.12em;
-            color:var(--accent); margin-bottom:16px; margin-top:8px;
-            display:flex; align-items:center; gap:10px;
-        }
-        .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
-
-        /* FORM FIELDS */
-        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-        .form-row.full { grid-template-columns:1fr; }
-        .field label { display:block; font-size:12px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
-        .field input, .field select {
-            width:100%; background:var(--surface2); border:1px solid var(--border);
-            border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif;
-            font-size:14px; padding:12px 16px; transition:border-color .2s,box-shadow .2s; outline:none; -webkit-appearance:none;
-        }
-        .field input:focus, .field select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(244,185,66,.12); }
-        .field input.error, .field select.error { border-color:var(--red); }
-        .field select option { background:var(--surface2); }
-        .field-hint { font-size:11px; color:var(--text-dim); margin-top:5px; }
-
-        /* KUESIONER */
-        .question-block {
-            background:var(--surface2); border:1.5px solid var(--border);
-            border-radius:12px; padding:20px; margin-bottom:14px; transition:border-color .2s;
-        }
-        .question-block:hover { border-color:rgba(244,185,66,.25); }
-        .question-block.unanswered { border-color:var(--red) !important; }
-        .question-text { font-size:14px; font-weight:500; margin-bottom:16px; line-height:1.6; }
-        .question-num {
-            display:inline-flex; align-items:center; justify-content:center;
-            width:24px; height:24px; background:var(--accent); color:#000;
-            border-radius:50%; font-size:11px; font-weight:700; margin-right:8px; flex-shrink:0;
-        }
-        .scale-options { display:flex; gap:8px; justify-content:space-between; flex-wrap:wrap; }
-        .scale-opt { flex:1; min-width:44px; }
-        .scale-opt input[type="radio"] { display:none; }
-        .scale-opt label {
-            display:flex; flex-direction:column; align-items:center; gap:4px;
-            background:var(--bg); border:1.5px solid var(--border);
-            border-radius:10px; padding:10px 6px; cursor:pointer; font-size:11px;
-            color:var(--text-dim); transition:all .2s; text-align:center;
-        }
-        .scale-opt label .num { font-size:16px; font-weight:700; color:var(--text); }
-        .scale-opt input:checked + label { border-color:var(--accent); background:rgba(244,185,66,.12); color:var(--accent); }
-        .scale-opt input:checked + label .num { color:var(--accent); }
-        .scale-legend { display:flex; justify-content:space-between; font-size:10px; color:var(--text-dim); margin-top:6px; padding:0 2px; }
-
-        /* SAW CRITERIA */
-        .saw-info-box {
-            background:rgba(244,185,66,.07); border:1px solid rgba(244,185,66,.2);
-            border-radius:12px; padding:16px 20px; margin-bottom:24px;
-        }
-        .saw-info-box p { font-size:13px; color:var(--text-dim); line-height:1.7; }
-        .saw-info-box strong { color:var(--accent); }
-
-        .criteria-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-        .criteria-card { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:20px; }
-        .criteria-name { font-size:13px; font-weight:600; color:var(--accent); margin-bottom:4px; }
-        .criteria-desc { font-size:11px; color:var(--text-dim); margin-bottom:14px; }
-        .criteria-input-wrap { display:flex; align-items:center; gap:10px; }
-        .criteria-input-wrap input[type="range"] { flex:1; accent-color:var(--accent); cursor:pointer; height:4px; }
-        .criteria-val {
-            min-width:38px; text-align:center;
-            background:rgba(244,185,66,.12); border:1px solid rgba(244,185,66,.2);
-            border-radius:6px; padding:4px 6px; font-size:13px; font-weight:700; color:var(--accent);
-        }
-        .weight-row { display:flex; align-items:center; gap:10px; margin-top:12px; }
-        .weight-row label { font-size:11px; color:var(--text-dim); white-space:nowrap; }
-        .weight-row input[type="number"] {
-            width:72px; background:var(--bg); border:1px solid var(--border);
-            border-radius:8px; color:var(--text); font-size:13px; padding:6px 10px;
-            outline:none; font-family:'DM Sans',sans-serif;
-        }
-        .weight-row input:focus { border-color:var(--accent); }
-        .weight-total {
-            display:flex; align-items:center; gap:8px; justify-content:flex-end;
-            font-size:12px; color:var(--text-dim); margin-top:12px;
-        }
-        .weight-total span { font-weight:700; }
-        .weight-total span.ok   { color:var(--green); }
-        .weight-total span.warn { color:var(--accent); }
-
-        /* FORMULA */
-        .formula-box {
-            background:var(--bg); border:1px dashed var(--border); border-radius:10px;
-            padding:14px 18px; margin:16px 0; font-family:'Courier New',monospace;
-            font-size:12px; color:var(--text-dim); line-height:1.8;
-        }
-        .formula-box .hl { color:var(--accent); }
-
-        /* BUTTONS */
-        .btn {
-            display:inline-flex; align-items:center; gap:8px;
-            font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
-            padding:13px 28px; border-radius:10px; cursor:pointer; border:none;
-            transition:all .2s; text-decoration:none; line-height:1;
-        }
-        .btn-primary {
-            background:linear-gradient(135deg,var(--accent),var(--accent2));
-            color:#111; box-shadow:0 4px 20px rgba(244,185,66,.25);
-        }
-        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(244,185,66,.4); }
-        .btn-ghost { background:transparent; color:var(--text-dim); border:1.5px solid var(--border); }
-        .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
-        .btn-actions { display:flex; justify-content:space-between; align-items:center; margin-top:28px; flex-wrap:wrap; gap:12px; }
-
-        /* RIWAYAT BANNER */
-        .riwayat-banner {
-            background:rgba(92,184,92,.08); border:1px solid rgba(92,184,92,.25);
-            border-radius:12px; padding:16px 20px; margin-bottom:28px;
-            display:flex; justify-content:space-between; align-items:center; gap:12px;
-            flex-wrap:wrap;
-        }
-        .riwayat-banner p { font-size:13px; color:#7dcc7d; }
-        .riwayat-banner strong { color:#a0e8a0; }
-
-        /* ANIMATIONS */
-        @keyframes fadeIn  { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes fadeDown{ from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
-
-        /* TOAST */
-        .toast {
-            position:fixed; top:20px; right:20px; z-index:999;
-            background:var(--accent2); color:#fff; font-size:13px; font-weight:600;
-            padding:12px 20px; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,.4);
-            animation:fadeIn .3s ease; display:none;
+        /* ===== MOBILE ===== */
+        @media(max-width: 640px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-3 { grid-template-columns: 1fr 1fr; }
+            .card-body { padding: 20px 18px; }
+            .card-header { padding: 20px 20px; }
+            .stepper { gap: 0; }
+            .step-label { display: none; }
         }
 
-        @media(max-width:600px) {
-            .form-row { grid-template-columns:1fr; }
-            .criteria-grid { grid-template-columns:1fr; }
-            .step-line { width:20px; }
-        }
+        /* ===== ANIMATE ===== */
+        .step-panel { display: none; animation: slideIn 0.3s ease; }
+        .step-panel.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
     </style>
-</head>
-<body>
-<div class="bg-grain"></div>
-<div class="bg-glow"></div>
-<div class="bg-glow2"></div>
-<div class="toast" id="toast"></div>
 
-<div class="container">
+    <div class="spk-wrapper">
 
-    {{-- HEADER --}}
-    <div class="page-header">
-        <div class="badge">🎯 Sistem Pendukung Keputusan</div>
-        <h1 class="page-title">Tes Minat &amp; Bakat<br/>Siswa</h1>
-        <p class="page-sub">Temukan jurusan dan karier terbaik berdasarkan minat, bakat, dan nilai kamu melalui metode SAW.</p>
-    </div>
-
-    {{-- RIWAYAT BANNER --}}
-    @if(isset($riwayat) && $riwayat)
-    <div class="riwayat-banner">
-        <p>✅ Kamu sudah pernah mengerjakan tes. Hasil terakhir: <strong>{{ $riwayat->alternatif_nama }}</strong> (Skor: {{ number_format($riwayat->skor * 100, 2) }}%)</p>
-        <a href="{{ route('siswa.tes.hasil') }}" class="btn btn-ghost" style="padding:8px 16px;font-size:13px;">Lihat Hasil →</a>
-    </div>
-    @endif
-
-    {{-- LARAVEL VALIDATION ERRORS --}}
-    @if($errors->any())
-    <div class="alert alert-error">
-        <span>⚠</span>
-        <div>
-            <strong>Harap perbaiki kesalahan berikut:</strong>
-            <ul>
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    </div>
-    @endif
-
-    @if(session('success'))
-    <div class="alert alert-success">✅ {{ session('success') }}</div>
-    @endif
-
-    @if(session('info'))
-    <div class="alert alert-info">ℹ️ {{ session('info') }}</div>
-    @endif
-
-    {{-- PROGRESS --}}
-    <div class="progress-bar-wrap">
-        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
-    </div>
-    <div class="progress-label">
-        <span id="progressText">Langkah 1 dari 3</span>
-        <span id="progressPct">0%</span>
-    </div>
-
-    {{-- STEP INDICATORS --}}
-    <div class="step-indicators">
-        <div class="step-dot active" id="dot1">1</div>
-        <div class="step-line" id="line1"></div>
-        <div class="step-dot" id="dot2">2</div>
-        <div class="step-line" id="line2"></div>
-        <div class="step-dot" id="dot3">3</div>
-    </div>
-
-    {{-- FORM UTAMA --}}
-    <form action="{{ route('siswa.tes.store') }}" method="POST" id="tesForm">
-        @csrf
-
-        {{-- ================================================
-             STEP 1 — KUESIONER MINAT BAKAT
-             ================================================ --}}
-        <div class="step active" id="step1">
-            <div class="card">
-                <div class="card-title">🧠 Kuesioner Minat &amp; Bakat</div>
-                <div class="card-desc">Jawab setiap pernyataan dengan <strong>jujur</strong>. Skala: 1 = Sangat Tidak Setuju &nbsp;|&nbsp; 5 = Sangat Setuju</div>
-
-                {{-- Sains --}}
-                <div class="section-label">🔬 Bidang Sains &amp; Teknologi</div>
-                @php
-                $pertanyaan_sains = [
-                    'sains_0' => 'Saya suka memecahkan soal matematika atau fisika.',
-                    'sains_1' => 'Saya tertarik mempelajari bagaimana teknologi dan komputer bekerja.',
-                    'sains_2' => 'Saya senang melakukan eksperimen atau percobaan ilmiah.',
-                    'sains_3' => 'Saya mudah memahami konsep-konsep sains.',
-                ];
-                @endphp
-                @foreach($pertanyaan_sains as $kode => $teks)
-                <div class="question-block" id="qblock_{{ $kode }}">
-                    <div class="question-text">
-                        <span class="question-num">{{ $loop->iteration }}</span>{{ $teks }}
-                    </div>
-                    <div class="scale-options">
-                        @for($n = 1; $n <= 5; $n++)
-                        <div class="scale-opt">
-                            <input type="radio" name="jawaban[{{ $kode }}]" id="{{ $kode }}_{{ $n }}" value="{{ $n }}"
-                                {{ old("jawaban.$kode") == $n ? 'checked' : '' }} />
-                            <label for="{{ $kode }}_{{ $n }}">
-                                <span class="num">{{ $n }}</span>
-                                {{ ['STS','TS','N','S','SS'][$n-1] }}
-                            </label>
-                        </div>
-                        @endfor
-                    </div>
-                    <div class="scale-legend"><span>Sangat Tidak Setuju</span><span>Sangat Setuju</span></div>
+        {{-- TOP BAR --}}
+        <div class="spk-header">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center font-bold text-blue-900 text-xs">S2J</div>
+                <div>
+                    <div class="text-white font-bold text-xs leading-tight">SMK Negeri 2 Jember</div>
+                    <div class="text-blue-300 text-xs">Sistem Pendukung Keputusan Jurusan</div>
                 </div>
-                @endforeach
-
-                {{-- Sosial --}}
-                <div class="section-label">🤝 Bidang Sosial &amp; Humaniora</div>
-                @php
-                $pertanyaan_sosial = [
-                    'sosial_0' => 'Saya senang berbicara dan berinteraksi dengan banyak orang.',
-                    'sosial_1' => 'Saya tertarik membantu orang lain memecahkan masalah mereka.',
-                    'sosial_2' => 'Saya suka belajar tentang sejarah, budaya, dan masyarakat.',
-                    'sosial_3' => 'Saya merasa nyaman menjadi pemimpin dalam kelompok.',
-                ];
-                @endphp
-                @foreach($pertanyaan_sosial as $kode => $teks)
-                <div class="question-block" id="qblock_{{ $kode }}">
-                    <div class="question-text">
-                        <span class="question-num">{{ $loop->iteration }}</span>{{ $teks }}
-                    </div>
-                    <div class="scale-options">
-                        @for($n = 1; $n <= 5; $n++)
-                        <div class="scale-opt">
-                            <input type="radio" name="jawaban[{{ $kode }}]" id="{{ $kode }}_{{ $n }}" value="{{ $n }}"
-                                {{ old("jawaban.$kode") == $n ? 'checked' : '' }} />
-                            <label for="{{ $kode }}_{{ $n }}">
-                                <span class="num">{{ $n }}</span>
-                                {{ ['STS','TS','N','S','SS'][$n-1] }}
-                            </label>
-                        </div>
-                        @endfor
-                    </div>
-                    <div class="scale-legend"><span>Sangat Tidak Setuju</span><span>Sangat Setuju</span></div>
-                </div>
-                @endforeach
-
-                {{-- Seni --}}
-                <div class="section-label">🎨 Bidang Seni &amp; Kreativitas</div>
-                @php
-                $pertanyaan_seni = [
-                    'seni_0' => 'Saya suka menggambar, melukis, atau membuat karya visual.',
-                    'seni_1' => 'Saya merasa ekspresi diri melalui seni itu penting.',
-                    'seni_2' => 'Saya tertarik pada dunia desain, musik, atau sastra.',
-                    'seni_3' => 'Saya mudah berpikir kreatif dan melihat sesuatu dari sudut berbeda.',
-                ];
-                @endphp
-                @foreach($pertanyaan_seni as $kode => $teks)
-                <div class="question-block" id="qblock_{{ $kode }}">
-                    <div class="question-text">
-                        <span class="question-num">{{ $loop->iteration }}</span>{{ $teks }}
-                    </div>
-                    <div class="scale-options">
-                        @for($n = 1; $n <= 5; $n++)
-                        <div class="scale-opt">
-                            <input type="radio" name="jawaban[{{ $kode }}]" id="{{ $kode }}_{{ $n }}" value="{{ $n }}"
-                                {{ old("jawaban.$kode") == $n ? 'checked' : '' }} />
-                            <label for="{{ $kode }}_{{ $n }}">
-                                <span class="num">{{ $n }}</span>
-                                {{ ['STS','TS','N','S','SS'][$n-1] }}
-                            </label>
-                        </div>
-                        @endfor
-                    </div>
-                    <div class="scale-legend"><span>Sangat Tidak Setuju</span><span>Sangat Setuju</span></div>
-                </div>
-                @endforeach
-
-                {{-- Bisnis --}}
-                <div class="section-label">📈 Bidang Bisnis &amp; Wirausaha</div>
-                @php
-                $pertanyaan_bisnis = [
-                    'bisnis_0' => 'Saya suka berdagang atau merencanakan bisnis kecil-kecilan.',
-                    'bisnis_1' => 'Saya tertarik dengan cara perusahaan menghasilkan keuntungan.',
-                    'bisnis_2' => 'Saya mudah mengelola uang dan membuat anggaran.',
-                    'bisnis_3' => 'Saya senang bernegosiasi dan meyakinkan orang lain.',
-                ];
-                @endphp
-                @foreach($pertanyaan_bisnis as $kode => $teks)
-                <div class="question-block" id="qblock_{{ $kode }}">
-                    <div class="question-text">
-                        <span class="question-num">{{ $loop->iteration }}</span>{{ $teks }}
-                    </div>
-                    <div class="scale-options">
-                        @for($n = 1; $n <= 5; $n++)
-                        <div class="scale-opt">
-                            <input type="radio" name="jawaban[{{ $kode }}]" id="{{ $kode }}_{{ $n }}" value="{{ $n }}"
-                                {{ old("jawaban.$kode") == $n ? 'checked' : '' }} />
-                            <label for="{{ $kode }}_{{ $n }}">
-                                <span class="num">{{ $n }}</span>
-                                {{ ['STS','TS','N','S','SS'][$n-1] }}
-                            </label>
-                        </div>
-                        @endfor
-                    </div>
-                    <div class="scale-legend"><span>Sangat Tidak Setuju</span><span>Sangat Setuju</span></div>
-                </div>
-                @endforeach
-
-                <div class="btn-actions">
-                    <span></span>
-                    <button type="button" class="btn btn-primary" onclick="goStep(2)">Lanjut ke Nilai →</button>
-                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-blue-300 text-xs hidden sm:inline">{{ Auth::user()->name }}</span>
+                <a href="{{ url('/dashboard') }}" class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors">← Dashboard</a>
             </div>
         </div>
 
-        {{-- ================================================
-             STEP 2 — INPUT NILAI & BOBOT SAW
-             ================================================ --}}
-        <div class="step" id="step2">
-            <div class="card">
-                <div class="card-title">📊 Input Nilai &amp; Bobot SAW</div>
-                <div class="card-desc">Masukkan nilai kamu pada setiap kriteria dan tentukan bobot kepentingannya.</div>
+        <div class="spk-container">
 
-                <div class="saw-info-box">
-                    <p>
-                        <strong>Metode SAW (Simple Additive Weighting)</strong> menentukan jurusan terbaik berdasarkan
-                        bobot dan nilai tiap kriteria. Nilai <strong>0–100</strong>, bobot akan dinormalisasi otomatis
-                        sehingga total tidak harus pas 100%.
-                    </p>
+            {{-- PROGRESS TEXT --}}
+            <div class="progress-wrapper">
+                <div class="progress-text">
+                    <span id="progressLabel">Langkah 1 dari 4</span>
+                    <span id="progressPct">25%</span>
                 </div>
-
-                <div class="formula-box">
-                    <span class="hl">Normalisasi :</span>  r<sub>ij</sub> = x<sub>ij</sub> / max(x<sub>j</sub>)<br/>
-                    <span class="hl">Skor SAW    :</span>  V<sub>i</sub> = &Sigma; w<sub>j</sub> &times; r<sub>ij</sub>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill" style="width:25%"></div>
                 </div>
+            </div>
 
-                <div class="section-label">Kriteria Penilaian</div>
-                <div class="criteria-grid">
-                    @php
-                    $kriteriaList = [
-                        ['id' => 'matematika', 'nama' => 'Nilai Matematika', 'desc' => 'Nilai rata-rata pelajaran matematika',    'default_bobot' => 20],
-                        ['id' => 'ipa',        'nama' => 'Nilai IPA / Sains', 'desc' => 'Nilai rata-rata pelajaran IPA',          'default_bobot' => 20],
-                        ['id' => 'ips',        'nama' => 'Nilai IPS / Sosial','desc' => 'Nilai rata-rata pelajaran IPS',          'default_bobot' => 15],
-                        ['id' => 'bahasa',     'nama' => 'Kemampuan Bahasa',  'desc' => 'Nilai Bahasa Indonesia / Inggris',       'default_bobot' => 15],
-                        ['id' => 'seni',       'nama' => 'Bakat Seni',        'desc' => 'Kemampuan seni / kreativitas',           'default_bobot' => 10],
-                        ['id' => 'logika',     'nama' => 'Kemampuan Logika',  'desc' => 'Kemampuan berpikir logis / analitis',    'default_bobot' => 20],
-                    ];
-                    @endphp
+            {{-- STEPPER --}}
+            <div class="stepper mb-8">
+                <div class="step-item-nav active" id="nav-0">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Data Fisik</div>
+                </div>
+                <div class="step-item-nav" id="nav-1">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Nilai Akademik</div>
+                </div>
+                <div class="step-item-nav" id="nav-2">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Tes Minat Bakat</div>
+                </div>
+                <div class="step-item-nav" id="nav-3">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Review & Kirim</div>
+                </div>
+            </div>
 
-                    @foreach($kriteriaList as $k)
-                    <div class="criteria-card">
-                        <div class="criteria-name">{{ $k['nama'] }}</div>
-                        <div class="criteria-desc">{{ $k['desc'] }}</div>
-                        <div class="criteria-input-wrap">
-                            <input type="range"
-                                id="range_{{ $k['id'] }}"
-                                min="0" max="100"
-                                value="{{ old('nilai.'.$k['id'], 70) }}"
-                                oninput="updateVal('{{ $k['id'] }}', this.value)" />
-                            <div class="criteria-val" id="val_{{ $k['id'] }}">{{ old('nilai.'.$k['id'], 70) }}</div>
+            <form id="spkForm" method="POST" action="{{ route('siswa.tes.simpan') }}">
+    @csrf
+
+                {{-- ============================================================ --}}
+                {{-- STEP 1: DATA FISIK --}}
+                {{-- ============================================================ --}}
+                <div class="step-panel active" id="step-0">
+                    <div class="spk-card">
+                        <div class="card-header">
+                            <div class="card-header-step">Langkah 1 dari 4</div>
+                            <div class="card-header-title">📏 Data Fisik & Kesehatan</div>
+                            <div class="card-header-sub">Isi data fisik kamu dengan jujur — data ini digunakan untuk menentukan kesesuaian jurusan</div>
                         </div>
-                        {{-- Hidden input yang akan dikirim ke server --}}
-                        <input type="hidden" name="nilai[{{ $k['id'] }}]" id="input_{{ $k['id'] }}" value="{{ old('nilai.'.$k['id'], 70) }}" />
-                        <div class="weight-row">
-                            <label>Bobot (%)</label>
-                            <input type="number"
-                                name="bobot[{{ $k['id'] }}]"
-                                id="bobot_{{ $k['id'] }}"
-                                value="{{ old('bobot.'.$k['id'], $k['default_bobot']) }}"
-                                min="0" max="100"
-                                oninput="updateWeightTotal()" />
+                        <div class="card-body">
+
+                            <div class="syarat-alert">
+                                ⚠️ <strong>Catatan:</strong> Beberapa jurusan memiliki syarat fisik tertentu. Data ini akan digunakan sebagai salah satu kriteria penilaian SPK.
+                            </div>
+
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Tinggi Badan <span class="req">*</span></label>
+                                    <div style="position:relative">
+                                        <input type="number" name="tinggi_badan" id="tinggi_badan" class="form-input" placeholder="165" min="100" max="220" required>
+                                        <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:0.75rem;color:#9ca3af;font-weight:600">cm</span>
+                                    </div>
+                                    <div class="form-hint">Masukkan tinggi badan dalam sentimeter</div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Berat Badan <span class="req">*</span></label>
+                                    <div style="position:relative">
+                                        <input type="number" name="berat_badan" id="berat_badan" class="form-input" placeholder="55" min="20" max="200" required>
+                                        <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:0.75rem;color:#9ca3af;font-weight:600">kg</span>
+                                    </div>
+                                    <div class="form-hint">Masukkan berat badan dalam kilogram</div>
+                                </div>
+                            </div>
+
+                            {{-- BMI Preview --}}
+                            <div id="bmiCard" style="display:none;background:linear-gradient(135deg,#f0f4fa,#e8f0fe);border-radius:12px;padding:14px 18px;margin-bottom:20px;border:1.5px solid #dde3ef">
+                                <div style="font-size:0.7rem;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Indeks Massa Tubuh (BMI)</div>
+                                <div style="display:flex;align-items:center;gap:12px">
+                                    <div id="bmiValue" style="font-size:1.8rem;font-weight:800;color:var(--primary-dark)">—</div>
+                                    <div>
+                                        <div id="bmiCategory" style="font-size:0.78rem;font-weight:700;color:var(--primary)">—</div>
+                                        <div style="font-size:0.68rem;color:#9ca3af">Kategori BMI kamu</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Buta Warna --}}
+                            <div class="form-group">
+                                <label class="form-label">Apakah kamu mengalami buta warna? <span class="req">*</span></label>
+                                <div class="toggle-group">
+                                    <div class="toggle-btn" id="btnButaYa" onclick="setButaWarna('ya')">
+                                        🔴 Ya, Buta Warna
+                                    </div>
+                                    <div class="toggle-btn" id="btnButaTidak" onclick="setButaWarna('tidak')">
+                                        🟢 Tidak, Normal
+                                    </div>
+                                </div>
+                                <input type="hidden" name="buta_warna" id="buta_warna" value="">
+                                <div class="form-hint">Buta warna dapat mempengaruhi kelayakan pada beberapa jurusan teknik</div>
+
+                                {{-- Info per jurusan --}}
+                                <div id="butaWarnaInfo" style="display:none;margin-top:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;font-size:0.75rem;color:#7f1d1d">
+                                    <div style="font-weight:700;margin-bottom:6px">⚠️ Jurusan yang memerlukan penglihatan warna normal:</div>
+                                    <ul style="list-style:none;padding:0;margin:0;space-y:4px">
+                                        <li>• Teknik Audio Video — warna komponen elektronik</li>
+                                        <li>• Desain Komunikasi Visual (DKV) — desain grafis & warna</li>
+                                        <li>• Teknik Instalasi Listrik — kode warna kabel</li>
+                                        <li>• Teknik Pembangkit Tenaga Listrik — kode warna kabel</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {{-- Jenis Kelamin --}}
+                            <div class="form-group">
+                                <label class="form-label">Jenis Kelamin <span class="req">*</span></label>
+                                <div class="radio-card-group">
+                                    <label class="radio-card" id="lblLaki" onclick="selectGender(this,'laki-laki')">
+                                        <input type="radio" name="jenis_kelamin" value="laki-laki" required>
+                                        <span class="radio-card-label">👦 Laki-laki</span>
+                                    </label>
+                                    <label class="radio-card" id="lblPerempuan" onclick="selectGender(this,'perempuan')">
+                                        <input type="radio" name="jenis_kelamin" value="perempuan" required>
+                                        <span class="radio-card-label">👧 Perempuan</span>
+                                    </label>
+                                </div>
+                                <div class="form-hint">Data ini digunakan untuk penyesuaian rekomendasi pada jurusan teknik berat</div>
+                            </div>
+
                         </div>
                     </div>
-                    @endforeach
+                    <div class="btn-nav">
+                        <div></div>
+                        <button type="button" class="btn-next" onclick="nextStep(0)">
+                            Selanjutnya: Nilai Akademik <span>→</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="weight-total">
-                    Total bobot: <span id="weightTotal" class="ok">100%</span>
-                    <span style="color:var(--text-dim)">(akan dinormalisasi otomatis)</span>
+                {{-- ============================================================ --}}
+                {{-- STEP 2: NILAI AKADEMIK --}}
+                {{-- ============================================================ --}}
+                <div class="step-panel" id="step-1">
+                    <div class="spk-card">
+                        <div class="card-header">
+                            <div class="card-header-step">Langkah 2 dari 4</div>
+                            <div class="card-header-title">📊 Nilai Akademik</div>
+                            <div class="card-header-sub">Masukkan nilai rapor semester terakhir (skala 0–100)</div>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="syarat-alert" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af">
+                                📝 <strong>Tips:</strong> Masukkan nilai rata-rata semester terakhir dari raport SMP kamu. Nilai ini merupakan faktor utama dalam penentuan rekomendasi jurusan.
+                            </div>
+
+                            <div class="grid-3">
+                                @php
+                                    $matapalajaran = [
+                                        ['bahasa_inggris', 'B. Inggris', '🇬🇧'],
+                                        ['bahasa_indonesia', 'B. Indonesia', '🇮🇩'],
+                                        ['matematika', 'Matematika', '🔢'],
+                                        ['ipa', 'IPA', '🔬'],
+                                        ['ips', 'IPS', '🌍'],
+                                        ['fisika', 'Fisika', '⚡'],
+                                        ['biologi', 'Biologi', '🌿'],
+                                        ['pkn', 'PKN', '🏛️'],
+                                    ];
+                                @endphp
+                                @foreach($matapalajaran as $mp)
+                                <div class="nilai-card">
+                                    <div class="nilai-label">{{ $mp[2] }} {{ $mp[1] }}</div>
+                                    <input
+                                        type="number"
+                                        name="nilai_{{ $mp[0] }}"
+                                        id="nilai_{{ $mp[0] }}"
+                                        class="nilai-input"
+                                        placeholder="0"
+                                        min="0" max="100"
+                                        oninput="updateRataRata()"
+                                        required
+                                    >
+                                    <div class="nilai-scale">0 – 100</div>
+                                </div>
+                                @endforeach
+                            </div>
+
+                            {{-- Rata-rata --}}
+                            <div style="background:linear-gradient(135deg,var(--primary-dark),var(--primary));border-radius:14px;padding:18px 22px;margin-top:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                                <div>
+                                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6);font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Rata-rata Nilai</div>
+                                    <div id="rataRata" style="font-size:2rem;font-weight:800;color:var(--accent-light)">—</div>
+                                </div>
+                                <div id="nilaiKategori" style="font-size:0.8rem;font-weight:600;color:rgba(255,255,255,0.8);text-align:right">Isi semua nilai untuk melihat rata-rata</div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="btn-nav">
+                        <button type="button" class="btn-prev" onclick="prevStep(1)">← Kembali</button>
+                        <button type="button" class="btn-next" onclick="nextStep(1)">Selanjutnya: Tes Minat → </button>
+                    </div>
                 </div>
 
-                <div class="btn-actions">
-                    <button type="button" class="btn btn-ghost" onclick="goStep(1)">← Kembali</button>
-                    <button type="button" class="btn btn-primary" onclick="goStep(3)">Review &amp; Submit →</button>
+                {{-- ============================================================ --}}
+                {{-- STEP 3: TES MINAT & BAKAT --}}
+                {{-- ============================================================ --}}
+                <div class="step-panel" id="step-2">
+                    <div class="spk-card">
+                        <div class="card-header">
+                            <div class="card-header-step">Langkah 3 dari 4</div>
+                            <div class="card-header-title">🧠 Tes Minat & Bakat</div>
+                            <div class="card-header-sub">Jawab 10 pertanyaan berikut dengan jujur sesuai keadaan dirimu</div>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="syarat-alert" style="background:#f0fdf4;border-color:#bbf7d0;color:#14532d">
+                                💡 <strong>Petunjuk:</strong> Pilih jawaban yang paling mencerminkan minat dan kemampuanmu. Tidak ada jawaban benar atau salah.
+                            </div>
+
+                            {{-- Progress bakat --}}
+                            <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:#9ca3af;margin-bottom:8px">
+                                <span>Progress pertanyaan</span>
+                                <span id="bakatProgress">0 / 10 dijawab</span>
+                            </div>
+                            <div class="progress-track" style="margin-bottom:20px">
+                                <div class="progress-fill" id="bakatFill" style="width:0%;background:var(--success)"></div>
+                            </div>
+
+                            @php
+                                $pertanyaan = [
+                                    [
+                                        'no' => 1,
+                                        'text' => 'Kegiatanmu di waktu luang paling sering...',
+                                        'opsi' => ['Membongkar/merakit barang elektronik', 'Menggambar, desain, atau berkreasi', 'Berhitung, membuat anggaran, atau analisa data', 'Memperbaiki kendaraan atau mesin'],
+                                        'field' => 'bakat_q1'
+                                    ],
+                                    [
+                                        'no' => 2,
+                                        'text' => 'Pelajaran yang paling kamu sukai di sekolah...',
+                                        'opsi' => ['Fisika & IPA', 'Seni & Prakarya', 'Matematika & Ekonomi', 'Teknik & Otomotif'],
+                                        'field' => 'bakat_q2'
+                                    ],
+                                    [
+                                        'no' => 3,
+                                        'text' => 'Kalau ada perangkat elektronik yang rusak di rumah, kamu...',
+                                        'opsi' => ['Penasaran dan coba memperbaikinya sendiri', 'Tidak tertarik, serahkan ke ahlinya', 'Cari tutorial di internet', 'Tergantung situasi'],
+                                        'field' => 'bakat_q3'
+                                    ],
+                                    [
+                                        'no' => 4,
+                                        'text' => 'Cita-cita atau profesi yang paling kamu inginkan...',
+                                        'opsi' => ['Insinyur / Teknisi', 'Desainer / Arsitek', 'Pengusaha / Akuntan', 'Mekanik / Teknisi Kendaraan'],
+                                        'field' => 'bakat_q4'
+                                    ],
+                                    [
+                                        'no' => 5,
+                                        'text' => 'Saat mengerjakan tugas kelompok, kamu lebih suka...',
+                                        'opsi' => ['Mengerjakan bagian teknis & logis', 'Mengerjakan desain & presentasi', 'Mengatur keuangan & administrasi', 'Bagian operasional & lapangan'],
+                                        'field' => 'bakat_q5'
+                                    ],
+                                    [
+                                        'no' => 6,
+                                        'text' => 'Kamu lebih senang bekerja...',
+                                        'opsi' => ['Di depan komputer / teknologi', 'Di studio kreatif / lapangan desain', 'Di kantor / administrasi', 'Di bengkel / lapangan teknik'],
+                                        'field' => 'bakat_q6'
+                                    ],
+                                    [
+                                        'no' => 7,
+                                        'text' => 'Proyek yang paling ingin kamu kerjakan...',
+                                        'opsi' => ['Membangun jaringan komputer atau sistem listrik', 'Membuat poster, video, atau animasi', 'Mengelola laporan keuangan bisnis', 'Merakit atau memodifikasi kendaraan/mesin'],
+                                        'field' => 'bakat_q7'
+                                    ],
+                                    [
+                                        'no' => 8,
+                                        'text' => 'Kemampuan yang menurutmu paling menonjol dalam dirimu...',
+                                        'opsi' => ['Analitis & problem solving teknis', 'Kreativitas & estetika visual', 'Teliti & terorganisir dalam data', 'Kuat secara fisik & terampil tangan'],
+                                        'field' => 'bakat_q8'
+                                    ],
+                                    [
+                                        'no' => 9,
+                                        'text' => 'Jenis konten yang paling sering kamu tonton atau baca...',
+                                        'opsi' => ['Tutorial teknologi & elektronik', 'Desain, seni, dan kreasi', 'Bisnis, investasi, dan keuangan', 'Otomotif, modifikasi, dan mesin'],
+                                        'field' => 'bakat_q9'
+                                    ],
+                                    [
+                                        'no' => 10,
+                                        'text' => 'Setelah lulus SMK, rencana kamu adalah...',
+                                        'opsi' => ['Bekerja di bidang IT / Teknik / Industri', 'Bekerja di bidang kreatif / desain / media', 'Kuliah ekonomi / bisnis / administrasi', 'Bekerja di bidang otomotif / manufaktur'],
+                                        'field' => 'bakat_q10'
+                                    ],
+                                ];
+                            @endphp
+
+                            @foreach($pertanyaan as $p)
+                            <div class="bakat-question" id="bq{{ $p['no'] }}">
+                                <div class="bakat-q-num">Pertanyaan {{ $p['no'] }}</div>
+                                <div class="bakat-q-text">{{ $p['text'] }}</div>
+                                <div class="bakat-options">
+                                    @foreach($p['opsi'] as $idx => $opsi)
+                                    <label class="bakat-opt" onclick="pilihBakat({{ $p['no'] }}, this)">
+                                        <input type="radio" name="{{ $p['field'] }}" value="{{ $idx + 1 }}" required>
+                                        {{ $opsi }}
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endforeach
+
+                        </div>
+                    </div>
+                    <div class="btn-nav">
+                        <button type="button" class="btn-prev" onclick="prevStep(2)">← Kembali</button>
+                        <button type="button" class="btn-next" onclick="nextStep(2)">Selanjutnya: Review → </button>
+                    </div>
                 </div>
-            </div>
+
+                {{-- ============================================================ --}}
+                {{-- STEP 4: REVIEW & SUBMIT --}}
+                {{-- ============================================================ --}}
+                <div class="step-panel" id="step-3">
+                    <div class="spk-card">
+                        <div class="card-header">
+                            <div class="card-header-step">Langkah 4 dari 4</div>
+                            <div class="card-header-title">✅ Review & Kirim</div>
+                            <div class="card-header-sub">Periksa kembali data yang sudah kamu isi sebelum mengirim</div>
+                        </div>
+                        <div class="card-body">
+
+                            {{-- Review Data Fisik --}}
+                            <div class="review-section">
+                                <div class="review-title">📏 Data Fisik & Kesehatan</div>
+                                <div class="review-grid">
+                                    <div class="review-item">
+                                        <div class="review-item-label">Tinggi Badan</div>
+                                        <div class="review-item-value" id="rev_tinggi">—</div>
+                                    </div>
+                                    <div class="review-item">
+                                        <div class="review-item-label">Berat Badan</div>
+                                        <div class="review-item-value" id="rev_berat">—</div>
+                                    </div>
+                                    <div class="review-item">
+                                        <div class="review-item-label">Buta Warna</div>
+                                        <div class="review-item-value" id="rev_buta">—</div>
+                                    </div>
+                                    <div class="review-item">
+                                        <div class="review-item-label">Jenis Kelamin</div>
+                                        <div class="review-item-value" id="rev_gender">—</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Review Nilai --}}
+                            <div class="review-section">
+                                <div class="review-title">📊 Nilai Akademik</div>
+                                <div class="review-grid">
+                                    <div class="review-item"><div class="review-item-label">B. Inggris</div><div class="review-item-value" id="rev_inggris">—</div></div>
+                                    <div class="review-item"><div class="review-item-label">B. Indonesia</div><div class="review-item-value" id="rev_indonesia">—</div></div>
+                                    <div class="review-item"><div class="review-item-label">Matematika</div><div class="review-item-value" id="rev_mtk">—</div></div>
+                                    <div class="review-item"><div class="review-item-label">IPA</div><div class="review-item-value" id="rev_ipa">—</div></div>
+                                    <div class="review-item"><div class="review-item-label">IPS</div><div class="review-item-value" id="rev_ips">—</div></div>
+                                    <div class="review-item"><div class="review-item-label">Fisika</div><div class="review-item-value" id="rev_fisika">—</div></div>
+                                    <div class="review-item"><div class="review-item-label">Biologi</div><div class="review-item-value" id="rev_biologi">—</div></div>
+                                    <div class="review-item"><div class="review-item-label">PKN</div><div class="review-item-value" id="rev_pkn">—</div></div>
+                                </div>
+                                <div style="margin-top:10px;background:linear-gradient(135deg,var(--primary-dark),var(--primary));border-radius:12px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+                                    <span style="color:rgba(255,255,255,0.7);font-size:0.75rem;font-weight:600">Rata-rata Nilai</span>
+                                    <span id="rev_rata" style="color:var(--accent-light);font-size:1.3rem;font-weight:800">—</span>
+                                </div>
+                            </div>
+
+                            {{-- Review Minat --}}
+                            <div class="review-section">
+                                <div class="review-title">🧠 Minat & Bakat</div>
+                                <div id="rev_bakat" class="review-grid">
+                                    <div class="review-item" style="grid-column:1/-1;text-align:center;color:#9ca3af;font-size:0.78rem">Selesaikan tes bakat terlebih dahulu</div>
+                                </div>
+                            </div>
+
+                            {{-- Disclaimer --}}
+                            <div style="background:#f0f4fa;border-radius:12px;padding:16px;margin-top:4px">
+                                <div style="font-size:0.75rem;color:#374151;line-height:1.6">
+                                    <strong>📋 Pernyataan:</strong> Dengan mengirim data ini, saya menyatakan bahwa semua informasi yang saya isi adalah <strong>benar dan jujur</strong>. Hasil rekomendasi SPK ini bersifat pendukung keputusan dan tidak mengikat secara hukum.
+                                </div>
+                                <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer">
+                                    <input type="checkbox" id="setuju" name="setuju" value="1" style="width:16px;height:16px;accent-color:var(--primary)" required>
+                                    <span style="font-size:0.78rem;font-weight:600;color:#374151">Saya menyetujui pernyataan di atas</span>
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="btn-nav">
+                        <button type="button" class="btn-prev" onclick="prevStep(3)">← Kembali</button>
+                        <button type="submit" class="btn-submit">
+                            🚀 Kirim & Lihat Hasil SPK
+                        </button>
+                    </div>
+                </div>
+
+            </form>
         </div>
+    </div>
 
-        {{-- ================================================
-             STEP 3 — KONFIRMASI & SUBMIT
-             ================================================ --}}
-        <div class="step" id="step3">
-            <div class="card">
-                <div class="card-title">✅ Konfirmasi &amp; Submit</div>
-                <div class="card-desc">Periksa kembali sebelum mengirim. Klik <strong>Hitung SAW</strong> untuk memproses.</div>
+    <script>
+        let currentStep = 0;
+        const totalSteps = 4;
+        const pct = [25, 50, 75, 100];
+        const labels = ['Langkah 1 dari 4', 'Langkah 2 dari 4', 'Langkah 3 dari 4', 'Langkah 4 dari 4'];
 
-                <div class="saw-info-box">
-                    <p>Semua jawaban dan nilai akan dikirim ke server untuk dihitung menggunakan metode SAW. Hasilnya berupa <strong>ranking jurusan</strong> yang paling sesuai dengan profil kamu.</p>
-                </div>
-
-                <div class="section-label">Ringkasan Jawaban Kuesioner</div>
-                <div id="ringkasanKuesioner" style="font-size:13px; color:var(--text-dim); line-height:2;">
-                    <!-- Diisi JS -->
-                </div>
-
-                <div class="section-label" style="margin-top:20px;">Ringkasan Nilai &amp; Bobot</div>
-                <div id="ringkasanNilai" style="font-size:13px; color:var(--text-dim); line-height:2;">
-                    <!-- Diisi JS -->
-                </div>
-
-                <div class="btn-actions">
-                    <button type="button" class="btn btn-ghost" onclick="goStep(2)">← Ubah Nilai</button>
-                    <button type="submit" class="btn btn-primary" id="btnSubmit">⚡ Hitung SAW &amp; Lihat Hasil</button>
-                </div>
-            </div>
-        </div>
-
-    </form>{{-- end form --}}
-
-</div>{{-- end container --}}
-
-<script>
-// ============================================================
-// DATA PERTANYAAN (untuk validasi & ringkasan)
-// ============================================================
-const semuaKode = [
-    'sains_0','sains_1','sains_2','sains_3',
-    'sosial_0','sosial_1','sosial_2','sosial_3',
-    'seni_0','seni_1','seni_2','seni_3',
-    'bisnis_0','bisnis_1','bisnis_2','bisnis_3',
-];
-
-const labelKuesioner = {
-    sains_0:'Suka soal matematika/fisika', sains_1:'Tertarik teknologi & komputer',
-    sains_2:'Senang eksperimen', sains_3:'Mudah memahami sains',
-    sosial_0:'Suka berinteraksi', sosial_1:'Suka membantu orang lain',
-    sosial_2:'Tertarik sejarah & budaya', sosial_3:'Nyaman jadi pemimpin',
-    seni_0:'Suka menggambar/melukis', seni_1:'Ekspresi diri lewat seni',
-    seni_2:'Tertarik desain/musik/sastra', seni_3:'Mudah berpikir kreatif',
-    bisnis_0:'Suka berdagang', bisnis_1:'Tertarik bisnis & profit',
-    bisnis_2:'Pandai kelola keuangan', bisnis_3:'Senang bernegosiasi',
-};
-
-const kriteriaIds = ['matematika','ipa','ips','bahasa','seni','logika'];
-const kriteriaLabel = {
-    matematika:'Matematika', ipa:'IPA/Sains', ips:'IPS/Sosial',
-    bahasa:'Bahasa', seni:'Bakat Seni', logika:'Logika',
-};
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-function goStep(n) {
-    if (n === 2 && !validateStep1()) return;
-    if (n === 3) buildRingkasan();
-
-    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-    document.getElementById('step' + n).classList.add('active');
-
-    // Progress
-    const pct = Math.round(((n - 1) / 2) * 100);
-    document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressText').textContent = `Langkah ${n} dari 3`;
-    document.getElementById('progressPct').textContent = pct + '%';
-
-    // Dots
-    for (let i = 1; i <= 3; i++) {
-        const dot  = document.getElementById('dot' + i);
-        dot.classList.remove('active','done');
-        if (i < n)  dot.classList.add('done');
-        if (i === n) dot.classList.add('active');
-    }
-    for (let i = 1; i <= 2; i++) {
-        const line = document.getElementById('line' + i);
-        line.classList.toggle('done', i < n);
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ============================================================
-// VALIDASI STEP 1
-// ============================================================
-function validateStep1() {
-    let allOk = true;
-    let firstEl = null;
-
-    semuaKode.forEach(kode => {
-        const block    = document.getElementById('qblock_' + kode);
-        const answered = document.querySelector(`input[name="jawaban[${kode}]"]:checked`);
-        if (!answered) {
-            block.classList.add('unanswered');
-            allOk = false;
-            if (!firstEl) firstEl = block;
-        } else {
-            block.classList.remove('unanswered');
+        // ===== STEPPER =====
+        function updateStepper(step) {
+            for (let i = 0; i < totalSteps; i++) {
+                const nav = document.getElementById('nav-' + i);
+                const circle = nav.querySelector('.step-circle');
+                nav.classList.remove('active', 'done');
+                if (i < step) {
+                    nav.classList.add('done');
+                    circle.innerHTML = '✓';
+                } else if (i === step) {
+                    nav.classList.add('active');
+                    circle.innerHTML = i + 1;
+                } else {
+                    circle.innerHTML = i + 1;
+                }
+            }
+            document.getElementById('progressFill').style.width = pct[step] + '%';
+            document.getElementById('progressLabel').textContent = labels[step];
+            document.getElementById('progressPct').textContent = pct[step] + '%';
         }
-    });
 
-    if (!allOk) {
-        showToast('⚠ Harap jawab semua pertanyaan terlebih dahulu!');
-        firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    return allOk;
-}
+        function showStep(step) {
+            document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('step-' + step).classList.add('active');
+            updateStepper(step);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-// Hapus highlight merah saat dijawab
-semuaKode.forEach(kode => {
-    document.querySelectorAll(`input[name="jawaban[${kode}]"]`).forEach(radio => {
-        radio.addEventListener('change', () => {
-            document.getElementById('qblock_' + kode)?.classList.remove('unanswered');
-        });
-    });
-});
+        function nextStep(from) {
+            if (!validateStep(from)) return;
+            if (from === 3 - 1) updateReview(); // before last step, update review
+            currentStep = from + 1;
+            if (currentStep === 3) updateReview();
+            showStep(currentStep);
+        }
 
-// ============================================================
-// UPDATE SLIDER
-// ============================================================
-function updateVal(id, val) {
-    document.getElementById('val_'   + id).textContent = val;
-    document.getElementById('input_' + id).value       = val;
-}
+        function prevStep(from) {
+            currentStep = from - 1;
+            showStep(currentStep);
+        }
 
-// ============================================================
-// UPDATE TOTAL BOBOT
-// ============================================================
-function updateWeightTotal() {
-    let total = 0;
-    kriteriaIds.forEach(id => {
-        total += parseFloat(document.getElementById('bobot_' + id)?.value || 0);
-    });
-    const el = document.getElementById('weightTotal');
-    el.textContent = total + '%';
-    el.className   = total > 0 ? 'ok' : 'warn';
-}
-updateWeightTotal();
+        // ===== VALIDATION =====
+        function validateStep(step) {
+            if (step === 0) {
+                const tinggi = document.getElementById('tinggi_badan').value;
+                const berat = document.getElementById('berat_badan').value;
+                const buta = document.getElementById('buta_warna').value;
+                const gender = document.querySelector('input[name="jenis_kelamin"]:checked');
+                if (!tinggi || tinggi < 100 || tinggi > 220) { alert('Masukkan tinggi badan yang valid (100-220 cm)'); return false; }
+                if (!berat || berat < 20 || berat > 200) { alert('Masukkan berat badan yang valid (20-200 kg)'); return false; }
+                if (!buta) { alert('Pilih status buta warna kamu'); return false; }
+                if (!gender) { alert('Pilih jenis kelamin kamu'); return false; }
+            }
+            if (step === 1) {
+                const fields = ['bahasa_inggris','bahasa_indonesia','matematika','ipa','ips','fisika','biologi','pkn'];
+                for (let f of fields) {
+                    const val = document.getElementById('nilai_' + f).value;
+                    if (!val || val < 0 || val > 100) {
+                        alert('Pastikan semua nilai diisi dengan benar (0-100)');
+                        return false;
+                    }
+                }
+            }
+            if (step === 2) {
+                for (let i = 1; i <= 10; i++) {
+                    const ans = document.querySelector('input[name="bakat_q' + i + '"]:checked');
+                    if (!ans) { alert('Jawab semua pertanyaan minat bakat (pertanyaan ' + i + ' belum dijawab)'); return false; }
+                }
+            }
+            return true;
+        }
 
-// ============================================================
-// BUILD RINGKASAN (Step 3)
-// ============================================================
-const skalaLabel = ['','STS','TS','N','S','SS'];
+        // ===== BMI CALCULATOR =====
+        function calcBMI() {
+            const t = parseFloat(document.getElementById('tinggi_badan').value);
+            const b = parseFloat(document.getElementById('berat_badan').value);
+            if (t > 0 && b > 0) {
+                const bmi = (b / ((t/100) * (t/100))).toFixed(1);
+                let cat = '', color = '';
+                if (bmi < 18.5) { cat = 'Berat Badan Kurang'; color = '#3b82f6'; }
+                else if (bmi < 25) { cat = 'Normal / Ideal'; color = '#10b981'; }
+                else if (bmi < 30) { cat = 'Berat Badan Lebih'; color = '#f59e0b'; }
+                else { cat = 'Obesitas'; color = '#ef4444'; }
+                document.getElementById('bmiCard').style.display = 'block';
+                document.getElementById('bmiValue').textContent = bmi;
+                document.getElementById('bmiCategory').textContent = cat;
+                document.getElementById('bmiCategory').style.color = color;
+            }
+        }
+        document.getElementById('tinggi_badan').addEventListener('input', calcBMI);
+        document.getElementById('berat_badan').addEventListener('input', calcBMI);
 
-function buildRingkasan() {
-    // Kuesioner
-    const kategori = {
-        '🔬 Sains': ['sains_0','sains_1','sains_2','sains_3'],
-        '🤝 Sosial': ['sosial_0','sosial_1','sosial_2','sosial_3'],
-        '🎨 Seni': ['seni_0','seni_1','seni_2','seni_3'],
-        '📈 Bisnis': ['bisnis_0','bisnis_1','bisnis_2','bisnis_3'],
-    };
+        // ===== BUTA WARNA TOGGLE =====
+        function setButaWarna(val) {
+            document.getElementById('buta_warna').value = val;
+            const ya = document.getElementById('btnButaYa');
+            const tidak = document.getElementById('btnButaTidak');
+            ya.className = 'toggle-btn' + (val === 'ya' ? ' selected-yes' : '');
+            tidak.className = 'toggle-btn' + (val === 'tidak' ? ' selected-no' : '');
+            document.getElementById('butaWarnaInfo').style.display = val === 'ya' ? 'block' : 'none';
+        }
 
-    let html = '';
-    Object.entries(kategori).forEach(([kat, kodes]) => {
-        html += `<div style="margin-bottom:10px;"><strong style="color:var(--accent)">${kat}</strong><br/>`;
-        kodes.forEach(kode => {
-            const checked = document.querySelector(`input[name="jawaban[${kode}]"]:checked`);
-            const val     = checked ? checked.value : '—';
-            const label   = checked ? skalaLabel[val] : '—';
-            html += `<span style="margin-right:16px;">• ${labelKuesioner[kode]}: <strong style="color:var(--text)">${val} (${label})</strong></span>`;
-        });
-        html += '</div>';
-    });
-    document.getElementById('ringkasanKuesioner').innerHTML = html;
+        // ===== GENDER RADIO =====
+        function selectGender(el, val) {
+            document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
 
-    // Nilai & Bobot
-    let html2 = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">';
-    kriteriaIds.forEach(id => {
-        const val   = document.getElementById('input_' + id)?.value || 0;
-        const bobot = document.getElementById('bobot_' + id)?.value || 0;
-        html2 += `
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
-                <div style="font-size:11px;color:var(--text-dim)">${kriteriaLabel[id]}</div>
-                <div style="font-size:15px;font-weight:700;color:var(--text)">${val}</div>
-                <div style="font-size:11px;color:var(--accent)">Bobot: ${bobot}%</div>
-            </div>`;
-    });
-    html2 += '</div>';
-    document.getElementById('ringkasanNilai').innerHTML = html2;
-}
+        // ===== NILAI RATA-RATA =====
+        function updateRataRata() {
+            const fields = ['bahasa_inggris','bahasa_indonesia','matematika','ipa','ips','fisika','biologi','pkn'];
+            let total = 0, count = 0;
+            for (let f of fields) {
+                const v = parseFloat(document.getElementById('nilai_' + f).value);
+                if (!isNaN(v) && v >= 0 && v <= 100) { total += v; count++; }
+            }
+            const el = document.getElementById('rataRata');
+            const kat = document.getElementById('nilaiKategori');
+            if (count === fields.length) {
+                const avg = (total / count).toFixed(1);
+                el.textContent = avg;
+                if (avg >= 90) kat.textContent = '⭐ Sangat Baik';
+                else if (avg >= 80) kat.textContent = '👍 Baik';
+                else if (avg >= 70) kat.textContent = '✅ Cukup';
+                else kat.textContent = '📚 Perlu Ditingkatkan';
+            } else {
+                el.textContent = '—';
+                kat.textContent = count + ' dari ' + fields.length + ' nilai terisi';
+            }
+        }
 
-// ============================================================
-// SUBMIT — tambah loading state
-// ============================================================
-document.getElementById('tesForm').addEventListener('submit', function () {
-    const btn = document.getElementById('btnSubmit');
-    btn.disabled    = true;
-    btn.textContent = '⏳ Menghitung...';
-});
+        // ===== BAKAT QUESTION =====
+        let bakatAnswered = 0;
+        function pilihBakat(no, el) {
+            const container = document.getElementById('bq' + no);
+            const opts = container.querySelectorAll('.bakat-opt');
+            const wasAnswered = container.classList.contains('answered');
+            opts.forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            if (!wasAnswered) {
+                container.classList.add('answered');
+                bakatAnswered++;
+                updateBakatProgress();
+            }
+        }
+        function updateBakatProgress() {
+            document.getElementById('bakatProgress').textContent = bakatAnswered + ' / 10 dijawab';
+            document.getElementById('bakatFill').style.width = (bakatAnswered * 10) + '%';
+        }
 
-// ============================================================
-// TOAST
-// ============================================================
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 3500);
-}
+        // ===== REVIEW =====
+        function updateReview() {
+            // Fisik
+            const t = document.getElementById('tinggi_badan').value;
+            const b = document.getElementById('berat_badan').value;
+            const buta = document.getElementById('buta_warna').value;
+            const gender = document.querySelector('input[name="jenis_kelamin"]:checked');
+            document.getElementById('rev_tinggi').textContent = t ? t + ' cm' : '—';
+            document.getElementById('rev_berat').textContent = b ? b + ' kg' : '—';
+            document.getElementById('rev_buta').textContent = buta === 'ya' ? '🔴 Ya, Buta Warna' : buta === 'tidak' ? '🟢 Tidak, Normal' : '—';
+            document.getElementById('rev_gender').textContent = gender ? (gender.value === 'laki-laki' ? '👦 Laki-laki' : '👧 Perempuan') : '—';
 
-// ============================================================
-// AUTO RESTORE STEP (jika ada validation error dari server)
-// ============================================================
-@if($errors->has('jawaban.*'))
-    // Error di kuesioner → tetap di step 1
-@elseif($errors->hasAny(['nilai.*', 'bobot.*']))
-    document.addEventListener('DOMContentLoaded', () => goStep(2));
-@endif
-</script>
-</body>
-</html>
+            // Nilai
+            const mapNilai = {inggris:'bahasa_inggris', indonesia:'bahasa_indonesia', mtk:'matematika', ipa:'ipa', ips:'ips', fisika:'fisika', biologi:'biologi', pkn:'pkn'};
+            let total = 0, count = 0;
+            for (let [rev, field] of Object.entries(mapNilai)) {
+                const v = document.getElementById('nilai_' + field).value;
+                document.getElementById('rev_' + rev).textContent = v ? v : '—';
+                if (v) { total += parseFloat(v); count++; }
+            }
+            document.getElementById('rev_rata').textContent = count === 8 ? (total/8).toFixed(1) : '—';
+
+            // Bakat
+            const bakatMap = ['Teknis/Logis','Kreatif/Visual','Bisnis/Administrasi','Otomotif/Mekanikal'];
+            let bakatHtml = '';
+            let scores = [0,0,0,0];
+            for (let i = 1; i <= 10; i++) {
+                const ans = document.querySelector('input[name="bakat_q' + i + '"]:checked');
+                if (ans) { scores[parseInt(ans.value)-1]++; }
+            }
+            const maxScore = Math.max(...scores);
+            for (let i = 0; i < 4; i++) {
+                const pct = Math.round((scores[i]/10)*100);
+                bakatHtml += `<div class="review-item"><div class="review-item-label">${bakatMap[i]}</div><div class="review-item-value">${scores[i]}/10 (${pct}%)</div></div>`;
+            }
+            document.getElementById('rev_bakat').innerHTML = bakatHtml || '<div class="review-item" style="grid-column:1/-1;text-align:center;color:#9ca3af">Belum ada jawaban</div>';
+        }
+    </script>
+
+</x-app-layout>

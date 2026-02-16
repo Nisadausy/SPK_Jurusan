@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Siswa\SpkController;
-
 Route::get('/', fn () => redirect()->route('login'));
 
 // Routes bawaan Breeze (login, register, logout, dll)
@@ -50,3 +49,4 @@ Route::prefix('siswa')->name('siswa.')->middleware('auth')->group(function () {
     Route::post('/tes/simpan', [SpkController::class, 'store'])->name('tes.simpan');
     Route::get('/tes/hasil', [SpkController::class, 'hasil'])->name('tes.hasil');
 });
+

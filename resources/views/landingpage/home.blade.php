@@ -297,10 +297,11 @@
             </button>
         </form>
     @else
-        <a href="{{ route('register') }}"
-           class="ml-2 px-4 py-1.5 bg-amber-400 text-gray-900 font-semibold text-xs rounded-lg hover:bg-amber-300 transition-colors">
-            Mulai SPK
-        </a>
+       <a href="{{ route('siswa.tes') }}">
+    MULAI SELEKSI JURUSAN
+</a>
+
+</a>
     @endauth
 </nav>
 
