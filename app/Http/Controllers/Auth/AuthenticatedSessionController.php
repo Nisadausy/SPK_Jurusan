@@ -12,17 +12,11 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
     public function create(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
@@ -34,11 +28,9 @@ class AuthenticatedSessionController extends Controller
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-
             return redirect()->route('login');
         }
 
-        // roles PK = id (sesuai migration kamu)
         $roleName = DB::table('roles')
             ->where('id', $user->role_id)
             ->value('nama_role');
@@ -53,13 +45,12 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('bk.dashboard');
         }
 
-        return redirect()->route('home'); // siswa
+        // siswa
+        return redirect()->route('siswa.tes.index');
+        // kalau kamu mau siswa balik ke landing setelah login, ganti jadi:
+        // return redirect()->route('home');
     }
 
-
-    /**
-     * Destroy an authenticated session.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
@@ -67,6 +58,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('home');
     }
 }

@@ -2,22 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Siswa\SpkController;
-Route::get('/', fn () => redirect()->route('login'));
 
-// Routes bawaan Breeze (login, register, logout, dll)
-require __DIR__.'/auth.php';
+// Landing (public)
+Route::get('/', fn () => view('landingpage.home'))->name('landing.home');
+
+// Breeze routes (login/register/logout/forgot/etc)
+require __DIR__ . '/auth.php';
 
 /**
- * Siswa (Home)
- * Breeze login = guard web, jadi pakai middleware auth (bukan auth:siswa)
+ * Optional: kalau ada yang akses /landingpage, langsung ke landing utama
+ * (bukan redirect ke tes)
  */
-Route::get('/landingpage', fn () => redirect()->route('siswa.tes.index'))
-    ->middleware('auth')
-    ->name('landingpage');
-
-Route::get('/home', fn () => view('landingpage.home'))
-    ->middleware('auth')
-    ->name('home');
+Route::get('/landingpage', fn () => redirect()->route('home'))->name('landingpage');
 
 /**
  * Admin
@@ -42,11 +38,10 @@ Route::prefix('bk')->name('bk.')->middleware('auth')->group(function () {
 });
 
 /**
- * Flow Tes Siswa (SPK)
+ * SPK Tes Siswa
  */
 Route::prefix('siswa')->name('siswa.')->middleware('auth')->group(function () {
     Route::get('/tes', [SpkController::class, 'index'])->name('tes.index');
     Route::post('/tes/simpan', [SpkController::class, 'store'])->name('tes.simpan');
     Route::get('/tes/hasil', [SpkController::class, 'hasil'])->name('tes.hasil');
 });
-
