@@ -11,9 +11,8 @@ require __DIR__ . '/auth.php';
 
 /**
  * Optional: kalau ada yang akses /landingpage, langsung ke landing utama
- * (bukan redirect ke tes)
  */
-Route::get('/landingpage', fn () => redirect()->route('home'))->name('landingpage');
+Route::get('/landingpage', fn () => redirect()->route('landing.home'))->name('landingpage');
 
 /**
  * Admin

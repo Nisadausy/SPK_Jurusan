@@ -3,7 +3,7 @@
     $isLanding = request()->routeIs('landing.home');
 @endphp
 
-{{-- TOP INFO BAR --}}
+<!-- {{-- TOP INFO BAR --}}
 <div class="top-bar text-white py-2 px-4">
     <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
         <div class="flex flex-wrap items-center gap-4 text-xs text-blue-200">
@@ -22,7 +22,7 @@
             @endauth
         </div>
     </div>
-</div>
+</div> -->
 
 {{-- MAIN HEADER --}}
 <header class="main-header text-white shadow-lg">

@@ -46,7 +46,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         // siswa
-        return redirect()->route('siswa.tes.index');
+        return redirect()->route('landingpage');
         // kalau kamu mau siswa balik ke landing setelah login, ganti jadi:
         // return redirect()->route('home');
     }
@@ -58,6 +58,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home');
+        return redirect()->route('landingpage');
     }
 }
