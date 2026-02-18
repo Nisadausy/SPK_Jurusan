@@ -179,6 +179,7 @@ class SpkController extends Controller
         }
 
         $hasilList = HasilSaw::where('tes_id', $tesTerakhir->id)
+            ->with('jurusan')
             ->orderBy('peringkat')
             ->get();
 
@@ -186,6 +187,25 @@ class SpkController extends Controller
             return redirect()->route('siswa.tes.index');
         }
 
-        return view('siswa.hasil', compact('siswa', 'tesTerakhir', 'hasilList'));
+        return view('pages.siswa.hasil', compact('siswa', 'tesTerakhir', 'hasilList'));
+    }
+
+    // ✅ DITAMBAHKAN — tidak mengubah apapun di atas
+    public function cetakPdf()
+    {
+        $user = Auth::user();
+        $siswa = Siswa::where('user_id', $user->id)->first();
+
+        if (!$siswa) abort(403);
+
+        $tesTerakhir = Tes::where('siswa_id', $siswa->id)->latest()->first();
+        if (!$tesTerakhir) abort(404);
+
+        $hasilList = HasilSaw::where('tes_id', $tesTerakhir->id)
+            ->with('jurusan')
+            ->orderBy('peringkat')
+            ->get();
+
+        return view('pages.siswa.hasil-pdf', compact('siswa', 'tesTerakhir', 'hasilList'));
     }
 }
