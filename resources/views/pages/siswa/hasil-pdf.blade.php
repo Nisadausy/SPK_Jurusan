@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hasil SPK - {{ $siswa->nama ?? '' }}</title>
+
+    @php
+        // Nama: di project kamu User pakai kolom "nama"
+        $namaSiswa = $siswa->user->nama ?? Auth::user()->nama ?? '-';
+    @endphp
+
+    <title>Hasil SPK - {{ $namaSiswa }}</title>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Arial', sans-serif; background: #fff; color: #1a2540; font-size: 13px; }
+        body { font-family: Arial, sans-serif; background: #fff; color: #1a2540; font-size: 13px; }
 
         .pdf-wrapper { max-width: 800px; margin: 0 auto; padding: 32px 36px; }
 
@@ -67,15 +74,6 @@
 </head>
 <body>
 <div class="pdf-wrapper">
-
-    {{-- TOMBOL CETAK (hanya di browser, hilang saat print) --}}
-    <div class="no-print" style="text-align:right;margin-bottom:16px">
-        <button onclick="window.print()" style="background:#1a3c6e;color:white;border:none;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">
-            🖨 Cetak / Save PDF
-        </button>
-        <a href="{{ route('siswa.tes.hasil') }}" style="margin-left:10px;color:#6b7a8d;font-size:12px;text-decoration:none">← Kembali</a>
-    </div>
-
     {{-- HEADER --}}
     <div class="pdf-header">
         <div class="pdf-logo">S2J</div>
@@ -95,34 +93,62 @@
     <div class="info-grid">
         <div class="info-item">
             <div class="info-item-label">Nama Siswa</div>
-            <div class="info-item-value">{{ $siswa->nama ?? Auth::user()->name }}</div>
+            <div class="info-item-value">{{ $namaSiswa }}</div>
         </div>
+
         <div class="info-item">
             <div class="info-item-label">Tanggal Tes</div>
-            <div class="info-item-value">{{ $tesTerakhir->created_at->format('d M Y') }}</div>
+            <div class="info-item-value">
+                {{ optional($tesTerakhir->created_at)->format('d M Y') ?? '-' }}
+            </div>
         </div>
+
         <div class="info-item">
             <div class="info-item-label">Nilai Akademik</div>
-            <div class="info-item-value">{{ number_format($tesTerakhir->nilai_akademik, 1) }}</div>
+            <div class="info-item-value">
+                {{ isset($tesTerakhir->nilai_akademik) ? number_format($tesTerakhir->nilai_akademik, 1) : '-' }}
+            </div>
         </div>
+
         <div class="info-item">
             <div class="info-item-label">Skor Minat Bakat</div>
-            <div class="info-item-value">{{ $tesTerakhir->skor_minat_bakat }}%</div>
+            <div class="info-item-value">
+                {{ isset($tesTerakhir->skor_minat_bakat) ? $tesTerakhir->skor_minat_bakat.'%' : '-' }}
+            </div>
         </div>
     </div>
 
     {{-- REKOMENDASI UTAMA --}}
-    @php $rekomendasi = $hasilList->first(); @endphp
+    @php
+        $rekomendasi = $hasilList->first();
+    @endphp
+
     <div class="section-title">Rekomendasi Jurusan</div>
-    <div class="rec-box">
-        <div class="rec-label">🏆 Jurusan Terbaik Untukmu</div>
-        <div class="rec-name">{{ $rekomendasi->jurusan->nama_jurusan ?? '-' }}</div>
-        <div class="rec-score">Nilai Preferensi SAW Tertinggi</div>
-        <div class="rec-badge">Skor: {{ number_format($rekomendasi->nilai_preferensi * 100, 2) }}%</div>
-    </div>
+    @if($rekomendasi)
+        @php
+            $skorRek = max(0, min(100, ($rekomendasi->nilai_preferensi ?? 0) * 100));
+        @endphp
+        <div class="rec-box">
+            <div class="rec-label">🏆 Jurusan Terbaik Untukmu</div>
+            <div class="rec-name">{{ $rekomendasi->jurusan->nama_jurusan ?? '-' }}</div>
+            <div class="rec-score">Nilai Preferensi SAW Tertinggi</div>
+            <div class="rec-badge">Skor: {{ number_format($skorRek, 2) }}%</div>
+        </div>
+    @else
+        <div class="rec-box">
+            <div class="rec-label">⚠ Data Belum Tersedia</div>
+            <div class="rec-name">Hasil SAW belum tersimpan</div>
+        </div>
+    @endif
 
     {{-- RANKING TABLE --}}
     <div class="section-title">Ranking Semua Jurusan (SAW)</div>
+
+    @php
+        // ambil nilai max yang benar dari seluruh list
+        $maxNilai = $hasilList->max('nilai_preferensi') ?? 0;
+    @endphp
+
     <table class="ranking-table">
         <thead>
             <tr>
@@ -134,29 +160,47 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($hasilList as $i => $hasil)
-            @php
-                $rankClass = $i === 0 ? 'best' : '';
-                $numClass  = $i === 0 ? 'rank-1' : ($i === 1 ? 'rank-2' : ($i === 2 ? 'rank-3' : 'rank-n'));
-                $barPct    = round(($hasil->nilai_preferensi / $hasilList->first()->nilai_preferensi) * 100);
-            @endphp
-            <tr class="{{ $rankClass }}">
-                <td style="text-align:center">
-                    <span class="rank-num {{ $numClass }}">{{ $hasil->peringkat }}</span>
-                </td>
-                <td>{{ $hasil->jurusan->nama_jurusan ?? '-' }}</td>
-                <td>
-                    <div class="bar-wrap">
-                        <div class="bar-fill" style="width:{{ $barPct }}%"></div>
-                    </div>
-                    {{ $barPct }}%
-                </td>
-                <td style="font-weight:700">{{ number_format($hasil->nilai_preferensi, 6) }}</td>
-                <td style="font-weight:800;color:{{ $i===0 ? '#7c5c10' : '#374151' }}">
-                    {{ number_format($hasil->nilai_preferensi * 100, 2) }}%
-                </td>
-            </tr>
-            @endforeach
+            @forelse($hasilList as $i => $hasil)
+                @php
+                    $rankClass = $i === 0 ? 'best' : '';
+                    $numClass  = $i === 0 ? 'rank-1' : ($i === 1 ? 'rank-2' : ($i === 2 ? 'rank-3' : 'rank-n'));
+
+                    $nilai = $hasil->nilai_preferensi ?? 0;
+
+                    // barPct aman 0..100, tidak NaN, tidak division by zero
+                    $barPct = $maxNilai > 0 ? round(($nilai / $maxNilai) * 100) : 0;
+                    $barPct = max(0, min(100, $barPct));
+
+                    $skorPct = max(0, min(100, $nilai * 100));
+                @endphp
+
+                <tr class="{{ $rankClass }}">
+                    <td style="text-align:center">
+                        <span class="rank-num {{ $numClass }}">{{ $hasil->peringkat ?? ($i+1) }}</span>
+                    </td>
+
+                    <td>{{ $hasil->jurusan->nama_jurusan ?? '-' }}</td>
+
+                    <td>
+                        <div class="bar-wrap">
+                            <div class="bar-fill" style="width:{{ $barPct }}%"></div>
+                        </div>
+                        {{ $barPct }}%
+                    </td>
+
+                    <td style="font-weight:700">{{ number_format($nilai, 6) }}</td>
+
+                    <td style="font-weight:800;color:{{ $i===0 ? '#7c5c10' : '#374151' }}">
+                        {{ number_format($skorPct, 2) }}%
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:20px;color:#6b7a8d">
+                        Data hasil SAW belum tersedia.
+                    </td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 

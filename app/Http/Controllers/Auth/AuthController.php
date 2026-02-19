@@ -24,12 +24,12 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:120',
+            'nama' => 'required|string|max:120|unique:users,nama',
             'email' => 'required|email|unique:users,email',
             'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
             'sekolah_asal' => 'required|string|max:150',
             'jenis_kelamin' => 'required|in:L,P',
-            'no_telepon' => 'required|string|max:30',
+            'no_telepon' => 'required|string|max:30|unique:siswa,no_telepon',
             'alamat' => 'required|string',
         ]);
 

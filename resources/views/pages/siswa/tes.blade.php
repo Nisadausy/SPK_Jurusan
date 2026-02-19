@@ -201,7 +201,7 @@
             <div class="step-item-nav"        id="nav-4"><div class="step-circle">5</div><div class="step-label">Review</div></div>
         </div>
 
-        <form id="spkForm" method="POST" action="{{ route('siswa.tes.simpan') }}">
+        <form id="spkForm" method="POST" action="{{ route('siswa.tes.simpan') }}" novalidate>
         @csrf
 
         {{-- STEP 0: PILIH JURUSAN --}}
@@ -283,7 +283,7 @@
                         <div class="field">
                             <label>Tinggi Badan <span class="req">*</span></label>
                             <div class="input-wrap">
-                                <input type="number" name="tinggi_badan" id="tinggi_badan" class="has-unit" placeholder="165" min="100" max="220" value="{{ old('tinggi_badan') }}" required />
+                                <input type="number" name="tinggi_badan" id="tinggi_badan" class="has-unit" placeholder="165" min="100" max="220" value="{{ old('tinggi_badan') }}" />
                                 <span class="input-unit">cm</span>
                             </div>
                             <div class="field-hint">Dalam satuan sentimeter</div>
@@ -291,7 +291,7 @@
                         <div class="field">
                             <label>Berat Badan <span class="req">*</span></label>
                             <div class="input-wrap">
-                                <input type="number" name="berat_badan" id="berat_badan" class="has-unit" placeholder="55" min="20" max="200" value="{{ old('berat_badan') }}" required />
+                                <input type="number" name="berat_badan" id="berat_badan" class="has-unit" placeholder="55" min="20" max="200" value="{{ old('berat_badan') }}" />
                                 <span class="input-unit">kg</span>
                             </div>
                             <div class="field-hint">Dalam satuan kilogram</div>
@@ -313,20 +313,6 @@
                         </div>
                         <input type="hidden" name="buta_warna" id="buta_warna" value="{{ old('buta_warna') }}" />
                     </div>
-                    <div class="section-label">Identitas</div>
-                    <div class="field">
-                        <label>Jenis Kelamin <span class="req">*</span></label>
-                        <div class="radio-card-group">
-                            <label class="radio-card {{ old('jenis_kelamin')==='laki-laki' ? 'selected' : '' }}" onclick="selectGender(this)">
-                                <input type="radio" name="jenis_kelamin" value="laki-laki" required {{ old('jenis_kelamin')==='laki-laki' ? 'checked' : '' }} />
-                                <span class="radio-card-label">👦 Laki-laki</span>
-                            </label>
-                            <label class="radio-card {{ old('jenis_kelamin')==='perempuan' ? 'selected' : '' }}" onclick="selectGender(this)">
-                                <input type="radio" name="jenis_kelamin" value="perempuan" required {{ old('jenis_kelamin')==='perempuan' ? 'checked' : '' }} />
-                                <span class="radio-card-label">👧 Perempuan</span>
-                            </label>
-                        </div>
-                    </div>
                 </div>
             </div>
             <div class="btn-nav">
@@ -346,14 +332,14 @@
                 <div class="card-body">
                     <div class="section-label">Mata Pelajaran</div>
                     <div class="nilai-grid">
-                        <div class="nilai-card"><div class="nilai-label">Matematika</div><input type="number" name="nilai_matematika" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_matematika') }}" required /><div class="nilai-scale">0 – 100</div></div>
-                        <div class="nilai-card"><div class="nilai-label">Bahasa Indonesia</div><input type="number" name="nilai_bahasa_indonesia" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_bahasa_indonesia') }}" required /><div class="nilai-scale">0 – 100</div></div>
-                        <div class="nilai-card"><div class="nilai-label">Bahasa Inggris</div><input type="number" name="nilai_bahasa_inggris" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_bahasa_inggris') }}" required /><div class="nilai-scale">0 – 100</div></div>
-                        <div class="nilai-card"><div class="nilai-label">IPA</div><input type="number" name="nilai_ipa" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_ipa') }}" required /><div class="nilai-scale">0 – 100</div></div>
-                        <div class="nilai-card"><div class="nilai-label">IPS</div><input type="number" name="nilai_ips" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_ips') }}" required /><div class="nilai-scale">0 – 100</div></div>
-                        <div class="nilai-card"><div class="nilai-label">Fisika</div><input type="number" name="nilai_fisika" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_fisika') }}" required /><div class="nilai-scale">0 – 100</div></div>
-                        <div class="nilai-card"><div class="nilai-label">Biologi</div><input type="number" name="nilai_biologi" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_biologi') }}" required /><div class="nilai-scale">0 – 100</div></div>
-                        <div class="nilai-card"><div class="nilai-label">PPKN</div><input type="number" name="nilai_pkn" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_pkn') }}" required /><div class="nilai-scale">0 – 100</div></div>
+                        <div class="nilai-card"><div class="nilai-label">Matematika</div><input type="number" name="nilai_matematika" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_matematika') }}" /><div class="nilai-scale">0 – 100</div></div>
+                        <div class="nilai-card"><div class="nilai-label">Bahasa Indonesia</div><input type="number" name="nilai_bahasa_indonesia" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_bahasa_indonesia') }}" /><div class="nilai-scale">0 – 100</div></div>
+                        <div class="nilai-card"><div class="nilai-label">Bahasa Inggris</div><input type="number" name="nilai_bahasa_inggris" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_bahasa_inggris') }}" /><div class="nilai-scale">0 – 100</div></div>
+                        <div class="nilai-card"><div class="nilai-label">IPA</div><input type="number" name="nilai_ipa" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_ipa') }}" /><div class="nilai-scale">0 – 100</div></div>
+                        <div class="nilai-card"><div class="nilai-label">IPS</div><input type="number" name="nilai_ips" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_ips') }}" /><div class="nilai-scale">0 – 100</div></div>
+                        <div class="nilai-card"><div class="nilai-label">Fisika</div><input type="number" name="nilai_fisika" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_fisika') }}" /><div class="nilai-scale">0 – 100</div></div>
+                        <div class="nilai-card"><div class="nilai-label">Biologi</div><input type="number" name="nilai_biologi" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_biologi') }}" /><div class="nilai-scale">0 – 100</div></div>
+                        <div class="nilai-card"><div class="nilai-label">PPKN</div><input type="number" name="nilai_pkn" class="nilai-input" placeholder="85" min="0" max="100" value="{{ old('nilai_pkn') }}" /><div class="nilai-scale">0 – 100</div></div>
                     </div>
                 </div>
             </div>
@@ -371,49 +357,68 @@
                     <div class="card-title">🧠 Tes Minat &amp; Bakat</div>
                     <div class="card-sub">Pilih jawaban yang paling menggambarkan dirimu</div>
                 </div>
+
                 <div class="card-body">
+
                     @php
-                    $opsiJawaban = [1=>'Sangat Tidak Setuju',2=>'Tidak Setuju',3=>'Setuju',4=>'Sangat Setuju'];
+                        $opsiJawaban = [
+                            1 => 'Sangat Tidak Setuju',
+                            2 => 'Tidak Setuju',
+                            3 => 'Setuju',
+                            4 => 'Sangat Setuju'
+                        ];
                     @endphp
-                    @if(isset($soal) && $soal->count() > 0)
+
+                    @if($soal->count() > 0)
+
                         @foreach($soal as $i => $s)
-                        <div class="bakat-question {{ old("bakat_q".($i+1)) ? 'answered' : '' }}" id="bq_{{ $i+1 }}">
-                            <div class="bakat-q-num">Pertanyaan {{ $i+1 }}</div>
-                            <div class="bakat-q-text">{{ $s->pertanyaan ?? $s->soal ?? $s->teks ?? 'Pertanyaan '.($i+1) }}</div>
+                        <div class="bakat-question {{ old('bakat_q'.($i+1)) ? 'answered' : '' }}" id="bq_{{ $i+1 }}">
+
+                            <div class="bakat-q-num">
+                                Pertanyaan {{ $i+1 }}
+                            </div>
+
+                            <div class="bakat-q-text">
+                                {{ $s->pertanyaan }}
+                            </div>
+
                             <div class="bakat-options">
                                 @foreach($opsiJawaban as $val => $lbl)
-                                <label class="bakat-opt {{ old("bakat_q".($i+1))==$val ? 'selected' : '' }}" onclick="pilihBakat(this,{{ $i+1 }})">
-                                    <input type="radio" name="bakat_q{{ $i+1 }}" value="{{ $val }}" {{ old("bakat_q".($i+1))==$val ? 'checked' : '' }} />{{ $lbl }}
+                                <label class="bakat-opt {{ old('bakat_q'.($i+1))==$val ? 'selected' : '' }}"
+                                    onclick="pilihBakat(this,{{ $i+1 }})">
+
+                                    <input type="radio"
+                                        name="bakat_q{{ $i+1 }}"
+                                        value="{{ $val }}"
+                                        {{ old('bakat_q'.($i+1))==$val ? 'checked' : '' }} />
+
+                                    {{ $lbl }}
                                 </label>
                                 @endforeach
                             </div>
+
                         </div>
                         @endforeach
+
                     @else
-                        @php
-                        $soalFallback=[1=>'Saya suka memecahkan soal matematika atau logika.',2=>'Saya tertarik mempelajari bagaimana teknologi dan komputer bekerja.',3=>'Saya senang melakukan eksperimen atau percobaan ilmiah.',4=>'Saya mudah memahami konsep-konsep sains dan teknik.',5=>'Saya senang berbicara dan berinteraksi dengan banyak orang.',6=>'Saya tertarik membantu orang lain memecahkan masalah mereka.',7=>'Saya suka menggambar, melukis, atau membuat karya visual.',8=>'Saya tertarik pada dunia desain, musik, atau seni.',9=>'Saya suka berdagang atau merencanakan bisnis.',10=>'Saya senang bernegosiasi dan meyakinkan orang lain.'];
-                        @endphp
-                        @foreach($soalFallback as $no => $teks)
-                        <div class="bakat-question {{ old("bakat_q{$no}") ? 'answered' : '' }}" id="bq_{{ $no }}">
-                            <div class="bakat-q-num">Pertanyaan {{ $no }}</div>
-                            <div class="bakat-q-text">{{ $teks }}</div>
-                            <div class="bakat-options">
-                                @foreach($opsiJawaban as $val => $lbl)
-                                <label class="bakat-opt {{ old("bakat_q{$no}")==$val ? 'selected' : '' }}" onclick="pilihBakat(this,{{ $no }})">
-                                    <input type="radio" name="bakat_q{{ $no }}" value="{{ $val }}" {{ old("bakat_q{$no}")==$val ? 'checked' : '' }} />{{ $lbl }}
-                                </label>
-                                @endforeach
-                            </div>
+                        <div class="alert-box alert-warn">
+                            ⚠ Soal minat belum tersedia. Hubungi admin.
                         </div>
-                        @endforeach
                     @endif
+
                 </div>
             </div>
+
             <div class="btn-nav">
-                <button type="button" class="btn-prev" onclick="prevStep(3)">← Kembali</button>
-                <button type="button" class="btn-next" onclick="nextStep(3)">Review &amp; Kirim →</button>
+                <button type="button" class="btn-prev" onclick="prevStep(3)">
+                    ← Kembali
+                </button>
+                <button type="button" class="btn-next" onclick="nextStep(3)">
+                    Review &amp; Kirim →
+                </button>
             </div>
         </div>
+
 
         {{-- STEP 4: REVIEW --}}
         <div class="step-panel" id="step-4">
@@ -437,7 +442,6 @@
                             <div class="review-item"><div class="review-item-label">Tinggi Badan</div><div class="review-item-value" id="rev-tinggi">—</div></div>
                             <div class="review-item"><div class="review-item-label">Berat Badan</div><div class="review-item-value" id="rev-berat">—</div></div>
                             <div class="review-item"><div class="review-item-label">Buta Warna</div><div class="review-item-value" id="rev-buta">—</div></div>
-                            <div class="review-item"><div class="review-item-label">Jenis Kelamin</div><div class="review-item-value" id="rev-gender">—</div></div>
                         </div>
                     </div>
                     <div class="review-section">
@@ -514,42 +518,101 @@
     }
 
     function validateStep(step) {
+
+        // STEP 0
         if (step === 0) {
             const j1 = document.getElementById('jurusan_pilihan_1').value;
             const j2 = document.getElementById('jurusan_pilihan_2').value;
-            if (!j1 || !j2) { showToast('⚠ Harap pilih 2 jurusan terlebih dahulu!'); return false; }
-            if (j1 === j2)   { showToast('⚠ Pilih 2 jurusan yang BERBEDA!');          return false; }
+
+            if (!j1 || !j2) {
+                showToast('⚠ Harap pilih 2 jurusan terlebih dahulu!');
+                return false;
+            }
+
+            if (j1 === j2) {
+                showToast('⚠ Pilih 2 jurusan yang BERBEDA!');
+                return false;
+            }
         }
+
+        // STEP 1
         if (step === 1) {
             const t = document.getElementById('tinggi_badan').value;
             const b = document.getElementById('berat_badan').value;
             const w = document.getElementById('buta_warna').value;
-            const g = document.querySelector('input[name="jenis_kelamin"]:checked');
-            if (!t||!b) { showToast('⚠ Harap isi tinggi dan berat badan!'); return false; }
-            if (!w)     { showToast('⚠ Harap pilih status buta warna!');    return false; }
-            if (!g)     { showToast('⚠ Harap pilih jenis kelamin!');         return false; }
-        }
-        if (step === 2) {
-            const fields=['nilai_matematika','nilai_bahasa_indonesia','nilai_bahasa_inggris','nilai_ipa','nilai_ips','nilai_fisika','nilai_biologi','nilai_pkn'];
-            for (const f of fields) {
-                const el = document.querySelector(`[name="${f}"]`);
-                if (!el||el.value==='') { showToast('⚠ Harap isi semua nilai akademik!'); return false; }
+
+            if (!t || !b) {
+                showToast('⚠ Harap isi tinggi dan berat badan!');
+                return false;
+            }
+
+            if (!w) {
+                showToast('⚠ Harap pilih status buta warna!');
+                return false;
             }
         }
+
+        // STEP 2
+        if (step === 2) {
+
+            const fields = [
+                'nilai_matematika',
+                'nilai_bahasa_indonesia',
+                'nilai_bahasa_inggris',
+                'nilai_ipa',
+                'nilai_ips',
+                'nilai_fisika',
+                'nilai_biologi',
+                'nilai_pkn'
+            ];
+
+            for (const f of fields) {
+
+                const el = document.querySelector(`[name="${f}"]`);
+
+                if (!el || el.value.trim() === '') {
+                    showToast('⚠ Harap isi semua nilai akademik!');
+                    el.focus();
+                    return false;
+                }
+
+                const value = parseFloat(el.value);
+
+                if (isNaN(value) || value < 0 || value > 100) {
+                    showToast('⚠ Nilai harus antara 0 sampai 100!');
+                    el.focus();
+                    return false;
+                }
+            }
+        }
+
+        // STEP 3
         if (step === 3) {
+
             let firstErr = null;
+
             for (let i = 1; i <= 10; i++) {
-                const el = document.getElementById('bq_'+i);
+
+                const el = document.getElementById('bq_' + i);
                 if (!el) continue;
+
                 if (!document.querySelector(`input[name="bakat_q${i}"]:checked`)) {
-                    el.style.borderColor='#e05454'; el.style.background='rgba(224,84,84,.06)';
+                    el.style.borderColor = '#e05454';
+                    el.style.background = 'rgba(224,84,84,.06)';
                     if (!firstErr) firstErr = el;
                 }
             }
-            if (firstErr) { showToast('⚠ Harap jawab semua pertanyaan minat bakat!'); firstErr.scrollIntoView({behavior:'smooth',block:'center'}); return false; }
+
+            if (firstErr) {
+                showToast('⚠ Harap jawab semua pertanyaan minat bakat!');
+                firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
         }
+
         return true;
     }
+
 
     function updateJurusanPreview() {
         const j1 = document.getElementById('jurusan_pilihan_1');

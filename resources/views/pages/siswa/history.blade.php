@@ -97,6 +97,54 @@
         margin-bottom: 24px; transition: all .2s;
     }
     .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ===== BUTTON AKSI ===== */
+    .aksi-wrap {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 12px;
+        text-decoration: none;
+        border: 1.5px solid var(--border);
+        transition: all .2s ease;
+        white-space: nowrap;
+    }
+    .btn-action:hover { transform: translateY(-1px); }
+
+    .btn-view {
+        background: rgba(92, 184, 92, .12);
+        border-color: rgba(92, 184, 92, .35);
+        color: #a8f0a8;
+    }
+    .btn-view:hover {
+        border-color: rgba(92, 184, 92, .6);
+        box-shadow: 0 10px 22px rgba(92,184,92,.15);
+    }
+
+    .btn-pdf {
+        background: rgba(244,185,66,.12);
+        border-color: rgba(244,185,66,.35);
+        color: var(--accent);
+    }
+    .btn-pdf:hover {
+        border-color: rgba(244,185,66,.6);
+        box-shadow: 0 10px 22px rgba(244,185,66,.15);
+    }
+
+    .btn-disabled {
+        opacity: .45;
+        pointer-events: none;
+        filter: grayscale(1);
+    }
 </style>
 
 <div class="history-wrapper">
@@ -134,21 +182,27 @@
                                 <th>Rekomendasi Jurusan</th>
                                 <th>Nilai Tertinggi</th>
                                 <th>Peringkat 1</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($histories as $index => $tes)
                                 @php
                                     $top = $tes->hasilSaw->sortBy('peringkat')->first();
+                                    $pdfReady = $tes->tesPDF && $tes->tesPDF->upload;
                                 @endphp
                                 <tr>
-                                    <td style="color:var(--text-dim)">{{ $histories->firstItem() + $index }}</td>
+                                    <td style="color:var(--text-dim)">
+                                        {{ $histories->firstItem() + $index }}
+                                    </td>
+
                                     <td>
                                         {{ $tes->created_at->format('d M Y') }}
                                         <span style="display:block;font-size:11px;color:var(--text-dim)">
                                             {{ $tes->created_at->format('H:i') }} WIB
                                         </span>
                                     </td>
+
                                     <td>
                                         @if($top && $top->jurusan)
                                             <span class="badge-jurusan">
@@ -158,8 +212,30 @@
                                             <span style="color:var(--text-dim)">-</span>
                                         @endif
                                     </td>
+
                                     <td>{{ $top ? number_format($top->nilai_preferensi, 4) : '-' }}</td>
                                     <td>{{ $top ? '#'.$top->peringkat : '-' }}</td>
+
+                                    <td>
+                                        <div class="aksi-wrap">
+                                            <a href="{{ route('siswa.tes.hasil.show', $tes->id) }}"
+                                               class="btn-action btn-view">
+                                                👁️ Lihat Hasil
+                                            </a>
+
+                                            <a href="{{ route('siswa.tes.pdf.download', $tes->id) }}"
+                                               class="btn-action btn-pdf {{ $pdfReady ? '' : 'btn-disabled' }}"
+                                               title="{{ $pdfReady ? 'Download PDF' : 'PDF belum tersedia' }}">
+                                                📄 Download PDF
+                                            </a>
+                                        </div>
+
+                                        @if(!$pdfReady)
+                                            <div style="margin-top:6px;font-size:11px;color:var(--text-dim)">
+                                                PDF belum tersedia untuk tes ini.
+                                            </div>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

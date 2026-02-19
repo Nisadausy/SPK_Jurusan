@@ -12,6 +12,11 @@ use App\Models\HasilSaw;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Upload;
+use App\Models\TesPdf;
+use Spatie\Browsershot\Browsershot;
+
 
 class SpkController extends Controller
 {
@@ -19,12 +24,21 @@ class SpkController extends Controller
     {
         $user = Auth::user();
 
-        $siswa = Siswa::where('user_id', $user->id)->first();
+        $siswa = Siswa::with('user')->where('user_id', $user->id)->first();
         if (!$siswa) {
-            return redirect()->route('home')->withErrors('Akses ditolak: akun ini bukan siswa.');
+            return redirect()->route('landing.home')->withErrors('Akses ditolak: akun ini bukan siswa.');
         }
 
-        $soal = SoalMinat::where('is_active', true)->orderBy('id')->get();
+        // ✅ Soal dinamis dari DB (admin bisa edit)
+        $soal = SoalMinat::where('is_active', true)
+            ->orderBy('id')
+            ->take(10)
+            ->get();
+
+        // (opsional) kalau soal kurang dari 10, tampilkan info
+        if ($soal->count() < 10) {
+            session()->flash('info', 'Soal minat aktif belum mencapai 10 butir. Hubungi admin untuk melengkapi.');
+        }
 
         $tesTerakhir = Tes::where('siswa_id', $siswa->id)->latest()->first();
         $riwayatHasil = $tesTerakhir
@@ -38,20 +52,33 @@ class SpkController extends Controller
 
     public function store(Request $request)
     {
-        $user = Auth::user();
-        $siswa = Siswa::where('user_id', $user->id)->first();
+        $user  = Auth::user();
+        $siswa = Siswa::with('user')->where('user_id', $user->id)->first();
 
         if (!$siswa) {
-            return redirect()->route('home')->withErrors('Akses ditolak: akun ini bukan siswa.');
+            return redirect()->route('landing.home')->withErrors('Akses ditolak: akun ini bukan siswa.');
         }
 
+        // ✅ Ambil soal aktif (dinamis) untuk disimpan ke jawaban_minat
+        $soalAktif = SoalMinat::where('is_active', true)
+            ->orderBy('id')
+            ->take(10)
+            ->get();
+
+        if ($soalAktif->count() < 10) {
+            return back()->withErrors('Soal minat aktif belum mencapai 10. Hubungi admin.')->withInput();
+        }
+
+        // ===== VALIDASI =====
         $validated = $request->validate([
-            'jurusan_pilihan_2' => 'required|exists:jurusan,id',
+            'jurusan_pilihan_1' => 'required|exists:jurusan,id',
+            'jurusan_pilihan_2' => 'required|exists:jurusan,id|different:jurusan_pilihan_1',
 
             'tinggi_badan'  => 'required|numeric|min:100|max:220',
             'berat_badan'   => 'required|numeric|min:20|max:200',
             'buta_warna'    => 'required|in:ya,tidak',
-            'jenis_kelamin' => 'required|in:laki-laki,perempuan',
+            // ✅ jenis_kelamin tetap ada di profil, tapi ini untuk TES masih dipakai di form kamu.
+            // Kalau nanti kamu mau hilangkan dari tes, itu step berikutnya.
 
             'nilai_bahasa_inggris'   => 'required|numeric|min:0|max:100',
             'nilai_bahasa_indonesia' => 'required|numeric|min:0|max:100',
@@ -62,6 +89,7 @@ class SpkController extends Controller
             'nilai_biologi'          => 'required|numeric|min:0|max:100',
             'nilai_pkn'              => 'required|numeric|min:0|max:100',
 
+            // ✅ tetap pakai bakat_q1..bakat_q10 agar cocok dengan blade kamu
             'bakat_q1'  => 'required|integer|min:1|max:4',
             'bakat_q2'  => 'required|integer|min:1|max:4',
             'bakat_q3'  => 'required|integer|min:1|max:4',
@@ -76,6 +104,7 @@ class SpkController extends Controller
             'setuju' => 'required|in:1',
         ]);
 
+        // ===== HITUNG NILAI AKADEMIK =====
         $nilaiMapel = [
             $validated['nilai_bahasa_inggris'],
             $validated['nilai_bahasa_indonesia'],
@@ -88,19 +117,19 @@ class SpkController extends Controller
         ];
         $nilaiAkademik = round(array_sum($nilaiMapel) / count($nilaiMapel), 2);
 
+        // ===== HITUNG SKOR MINAT BAKAT: BOBOT SAMA =====
         $jawabanBakat = [];
         for ($i = 1; $i <= 10; $i++) {
-            $jawabanBakat[] = (int)$validated["bakat_q{$i}"];
+            $jawabanBakat[] = (int) $validated["bakat_q{$i}"];
         }
-        $count = [0, 0, 0, 0];
-        foreach ($jawabanBakat as $val) {
-            $count[$val - 1]++;
-        }
-        $max = max($count);
-        $skorMinatBakat = (int) round(($max / 10) * 100);
 
-        DB::transaction(function () use ($validated, $siswa, $nilaiAkademik, $skorMinatBakat, $jawabanBakat) {
+        // skala 1..4 => max total = 10*4=40
+        $sumSkor = array_sum($jawabanBakat);
+        $skorMinatBakat = (int) round(($sumSkor / (10 * 4)) * 100); // 0..100
 
+        DB::transaction(function () use ($validated, $siswa, $nilaiAkademik, $skorMinatBakat, $jawabanBakat, $soalAktif) {
+
+            // ===== SIMPAN TES =====
             $tes = Tes::create([
                 'siswa_id'           => $siswa->id,
                 'nilai_akademik'     => $nilaiAkademik,
@@ -108,24 +137,27 @@ class SpkController extends Controller
                 'tinggi_badan'       => $validated['tinggi_badan'],
                 'berat_badan'        => $validated['berat_badan'],
                 'buta_warna'         => ($validated['buta_warna'] === 'ya'),
+
+                // DB FIX kamu sudah punya minat_jurusan_1_id dan minat_jurusan_2_id
                 'minat_jurusan_1_id' => $validated['jurusan_pilihan_1'],
                 'minat_jurusan_2_id' => $validated['jurusan_pilihan_2'],
             ]);
 
-            $soalAktif = SoalMinat::where('is_active', true)->orderBy('id')->take(10)->get();
-            if ($soalAktif->count() === 10) {
-                foreach ($soalAktif as $idx => $soal) {
-                    JawabanMinat::create([
-                        'tes_id'        => $tes->id,
-                        'soal_minat_id' => $soal->id,
-                        'skor'          => $jawabanBakat[$idx],
-                    ]);
-                }
+            // ===== SIMPAN JAWABAN MINAT (DINAMIS DARI DB) =====
+            foreach ($soalAktif as $idx => $soal) {
+                JawabanMinat::create([
+                    'tes_id'        => $tes->id,
+                    'soal_minat_id' => $soal->id,
+                    'skor'          => $jawabanBakat[$idx], // idx 0..9
+                ]);
             }
 
+            // ===== PERHITUNGAN SAW (sesuai versi sederhana yang kamu pakai) =====
             $jurusans  = Jurusan::where('is_active', true)->orderBy('id')->get();
+
             $wAkademik = 0.6;
             $wMinat    = 0.4;
+
             $rAkademik = min(max($tes->nilai_akademik / 100, 0), 1);
             $rMinat    = min(max($tes->skor_minat_bakat / 100, 0), 1);
 
@@ -148,6 +180,8 @@ class SpkController extends Controller
                     'peringkat'        => $idx + 1,
                 ]);
             }
+
+            $this->generateAndStorePdf($tes);
         });
 
         return redirect()->route('siswa.tes.hasil');
@@ -155,11 +189,11 @@ class SpkController extends Controller
 
     public function hasil()
     {
-        $user = Auth::user();
-        $siswa = Siswa::where('user_id', $user->id)->first();
+        $user  = Auth::user();
+        $siswa = Siswa::with('user')->where('user_id', $user->id)->first();
 
         if (!$siswa) {
-            return redirect()->route('home')->withErrors('Akses ditolak: akun ini bukan siswa.');
+            return redirect()->route('landing.home')->withErrors('Akses ditolak: akun ini bukan siswa.');
         }
 
         $tesTerakhir = Tes::where('siswa_id', $siswa->id)->latest()->first();
@@ -178,8 +212,14 @@ class SpkController extends Controller
 
         $jurusanPilihan1 = Jurusan::find($tesTerakhir->minat_jurusan_1_id);
         $jurusanPilihan2 = Jurusan::find($tesTerakhir->minat_jurusan_2_id);
-        $skorPilihan1    = $hasilList->firstWhere('jurusan_id', $tesTerakhir->minat_jurusan_1_id);
-        $skorPilihan2    = $hasilList->firstWhere('jurusan_id', $tesTerakhir->minat_jurusan_2_id);
+
+        $skorPilihan1 = $tesTerakhir->minat_jurusan_1_id
+            ? $hasilList->firstWhere('jurusan_id', $tesTerakhir->minat_jurusan_1_id)
+            : null;
+
+        $skorPilihan2 = $tesTerakhir->minat_jurusan_2_id
+            ? $hasilList->firstWhere('jurusan_id', $tesTerakhir->minat_jurusan_2_id)
+            : null;
 
         return view('pages.siswa.hasil', compact(
             'siswa',
@@ -195,19 +235,81 @@ class SpkController extends Controller
     public function cetakPdf()
     {
         $user = Auth::user();
-        $siswa = Siswa::where('user_id', $user->id)->first();
 
+        $siswa = Siswa::where('user_id', $user->id)->first();
         if (!$siswa) abort(403);
 
-        $tesTerakhir = Tes::where('siswa_id', $siswa->id)->latest()->first();
-        if (!$tesTerakhir) abort(404);
+        $tes = Tes::where('siswa_id', $siswa->id)->latest()->first();
+        if (!$tes) abort(404);
 
-        $hasilList = HasilSaw::where('tes_id', $tesTerakhir->id)
+        $tesPdf = TesPdf::with('upload')
+            ->where('tes_id', $tes->id)
+            ->first();
+
+        if (!$tesPdf || !$tesPdf->upload) {
+            return back()->withErrors('File PDF belum tersedia.');
+        }
+
+        // 🔥 PERBAIKAN DI SINI
+        $filePath = storage_path('app/public/' . $tesPdf->upload->storage_path);
+
+        if (!file_exists($filePath)) {
+            return back()->withErrors('File tidak ditemukan di server.');
+        }
+
+        return response()->download($filePath);
+    }
+
+    private function generateAndStorePdf($tes)
+    {
+        $hasilList = HasilSaw::where('tes_id', $tes->id)
             ->with('jurusan')
             ->orderBy('peringkat')
             ->get();
 
-        return view('pages.siswa.hasil-pdf', compact('siswa', 'tesTerakhir', 'hasilList'));
+        $siswa = $tes->siswa()->with('user')->first();
+
+        $html = view('pages.siswa.hasil-pdf', [
+            'siswa'       => $siswa,
+            'tesTerakhir' => $tes,
+            'hasilList'   => $hasilList
+        ])->render();
+
+        $fileName     = 'hasil_tes_' . $tes->id . '.pdf';
+        $relativePath = 'hasil_pdf/' . $fileName;
+        $absolutePath = storage_path('app/public/' . $relativePath);
+
+        if (!is_dir(dirname($absolutePath))) {
+            mkdir(dirname($absolutePath), 0755, true);
+        }
+
+        Browsershot::html($html)
+            ->format('A4')
+            ->margins(10, 10, 10, 10)
+            ->showBackground()
+            ->emulateMedia('screen')
+            // ->waitUntilNetworkIdle() // kalau sering bermasalah, matikan ini
+            ->save($absolutePath);
+
+        $sizeBytes = filesize($absolutePath) ?: 0;
+        $sizeMb = round($sizeBytes / 1024 / 1024, 2);
+
+        $upload = Upload::create([
+            'uploader_user_id' => $siswa->user_id,
+            'file_name'        => $fileName,
+            'ext'              => 'pdf',
+            'mime_type'        => 'application/pdf',
+            'size_mb'          => $sizeMb,
+            'storage_path'     => $relativePath,
+        ]);
+
+        TesPdf::updateOrCreate(
+            ['tes_id' => $tes->id],
+            [
+                'upload_id'    => $upload->id,
+                'generated_at' => now(),
+            ]
+        );
     }
 
     public function history()
@@ -219,10 +321,80 @@ class SpkController extends Controller
         }
 
         $histories = Tes::where('siswa_id', $siswa->id)
-            ->with(['hasilSaw.jurusan'])
+            ->with(['hasilSaw.jurusan', 'tesPDF.upload'])
             ->latest()
             ->paginate(10);
 
         return view('pages.siswa.history', compact('histories'));
+    }
+
+    public function hasilByTes(Tes $tes)
+    {
+        $user  = Auth::user();
+        $siswa = Siswa::with('user')->where('user_id', $user->id)->first();
+        if (!$siswa) abort(403);
+
+        // pastikan tes milik siswa ini
+        if ($tes->siswa_id !== $siswa->id) abort(403);
+
+        $hasilList = HasilSaw::where('tes_id', $tes->id)
+            ->with('jurusan')
+            ->orderBy('peringkat')
+            ->get();
+
+        if ($hasilList->isEmpty()) {
+            return redirect()->route('siswa.tes.index')->withErrors('Hasil tes ini belum tersedia.');
+        }
+
+        $jurusanPilihan1 = Jurusan::find($tes->minat_jurusan_1_id);
+        $jurusanPilihan2 = Jurusan::find($tes->minat_jurusan_2_id);
+
+        $skorPilihan1 = $tes->minat_jurusan_1_id
+            ? $hasilList->firstWhere('jurusan_id', $tes->minat_jurusan_1_id)
+            : null;
+
+        $skorPilihan2 = $tes->minat_jurusan_2_id
+            ? $hasilList->firstWhere('jurusan_id', $tes->minat_jurusan_2_id)
+            : null;
+
+        // pakai view hasil yang sama, tapi tes-nya bukan latest
+        return view('pages.siswa.hasil', [
+            'siswa' => $siswa,
+            'tesTerakhir' => $tes,          // biar blade kamu tetap kompatibel
+            'hasilList' => $hasilList,
+            'jurusanPilihan1' => $jurusanPilihan1,
+            'jurusanPilihan2' => $jurusanPilihan2,
+            'skorPilihan1' => $skorPilihan1,
+            'skorPilihan2' => $skorPilihan2,
+        ]);
+    }
+
+    public function cetakPdfByTes(Tes $tes)
+    {
+        $user  = Auth::user();
+        $siswa = Siswa::where('user_id', $user->id)->first();
+        if (!$siswa) abort(403);
+
+        // pastikan tes milik siswa ini
+        if ($tes->siswa_id !== $siswa->id) abort(403);
+
+        $tesPdf = TesPdf::with('upload')
+            ->where('tes_id', $tes->id)
+            ->first();
+
+        if (!$tesPdf || !$tesPdf->upload) {
+            return back()->withErrors('File PDF untuk tes ini belum tersedia.');
+        }
+
+        $filePath = storage_path('app/public/' . $tesPdf->upload->storage_path);
+
+        if (!file_exists($filePath)) {
+            return back()->withErrors('File PDF tidak ditemukan di server.');
+        }
+
+        // kasih nama download yang rapi
+        $downloadName = 'hasil_tes_' . $tes->id . '.pdf';
+
+        return response()->download($filePath, $downloadName);
     }
 }

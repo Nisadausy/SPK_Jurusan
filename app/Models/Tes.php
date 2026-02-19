@@ -34,7 +34,6 @@ class Tes extends Model
         return $this->hasMany(JawabanMinat::class);
     }
 
-    // relasi ke jurusan pilihan
     public function jurusanPilihan1()
     {
         return $this->belongsTo(Jurusan::class, 'minat_jurusan_1_id');
@@ -43,5 +42,13 @@ class Tes extends Model
     public function jurusanPilihan2()
     {
         return $this->belongsTo(Jurusan::class, 'minat_jurusan_2_id');
+    }
+    public function pdf()
+    {
+        return $this->hasOne(TesPdf::class, 'tes_id');
+    }
+       public function tesPDF()
+    {
+        return $this->hasOne(TesPdf::class, 'tes_id');
     }
 }
