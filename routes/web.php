@@ -44,4 +44,6 @@ Route::prefix('siswa')->name('siswa.')->middleware('auth')->group(function () {
     Route::post('/tes/simpan', [SpkController::class, 'store'])->name('tes.simpan');
     Route::get('/tes/hasil', [SpkController::class, 'hasil'])->name('tes.hasil');
     Route::get('/tes/cetak', [SpkController::class, 'cetakPdf'])->name('tes.cetak'); // ✅ tambahan
+    Route::get('/history', [SpkController::class, 'history'])->name('history');
 });
+

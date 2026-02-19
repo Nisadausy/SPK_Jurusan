@@ -16,14 +16,13 @@ class Tes extends Model
         'berat_badan',
         'buta_warna',
         'minat_jurusan_1_id',
-        'minat_jurusan_2_id'
+        'minat_jurusan_2_id',
     ];
 
     public function siswa()
-{
-    return $this->belongsTo(Siswa::class, 'siswa_id');
-}
-
+    {
+        return $this->belongsTo(Siswa::class, 'siswa_id');
+    }
 
     public function hasilSaw()
     {
@@ -33,5 +32,16 @@ class Tes extends Model
     public function jawabanMinat()
     {
         return $this->hasMany(JawabanMinat::class);
+    }
+
+    // relasi ke jurusan pilihan
+    public function jurusanPilihan1()
+    {
+        return $this->belongsTo(Jurusan::class, 'minat_jurusan_1_id');
+    }
+
+    public function jurusanPilihan2()
+    {
+        return $this->belongsTo(Jurusan::class, 'minat_jurusan_2_id');
     }
 }

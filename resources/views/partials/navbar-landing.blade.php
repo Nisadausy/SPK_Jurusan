@@ -53,7 +53,7 @@
 
                     <div class="absolute top-full left-0 w-52 bg-white text-gray-800 rounded-lg shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 text-xs">
                         <a href="{{ route('siswa.tes.index') }}" class="block px-4 py-2 hover:bg-blue-50">Cek Jurusan</a>
-                        <a href="{{ route('siswa.tes.hasil') }}" class="block px-4 py-2 hover:bg-blue-50">History</a>
+                       <a href="{{ route('siswa.history') }}" class="block px-4 py-2 hover:bg-blue-50">History</a>  {{-- ✅ ganti ini --}}
                     </div>
                 </div>
 
