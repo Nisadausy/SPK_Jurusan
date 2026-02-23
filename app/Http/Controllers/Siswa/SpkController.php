@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Upload;
 use App\Models\TesPdf;
 use Spatie\Browsershot\Browsershot;
+use Illuminate\Support\Facades\Log;
 
 
 class SpkController extends Controller
@@ -181,7 +182,13 @@ class SpkController extends Controller
                 ]);
             }
 
-            $this->generateAndStorePdf($tes);
+            $ok = $this->generateAndStorePdf($tes);
+
+            if (!$ok) {
+                // jangan rollback hasil SAW; cukup simpan warning agar user tahu
+                // (kalau kamu mau rollback semua, harus throw exception)
+                Log::warning('PDF gagal dibuat saat store tes', ['tes_id' => $tes->id]);
+            }
         });
 
         return redirect()->route('siswa.tes.hasil');
@@ -242,25 +249,41 @@ class SpkController extends Controller
         $tes = Tes::where('siswa_id', $siswa->id)->latest()->first();
         if (!$tes) abort(404);
 
-        $tesPdf = TesPdf::with('upload')
-            ->where('tes_id', $tes->id)
-            ->first();
+        // ambil record pdf
+        $tesPdf = TesPdf::with('upload')->where('tes_id', $tes->id)->first();
 
+        // ✅ Kalau belum ada PDF di DB, coba generate dulu
         if (!$tesPdf || !$tesPdf->upload) {
-            return back()->withErrors('File PDF belum tersedia.');
+            $ok = $this->generateAndStorePdf($tes);
+
+            if (!$ok) {
+                return redirect()
+                    ->route('siswa.tes.hasil')
+                    ->withErrors('Gagal membuat PDF. Cek konfigurasi Chrome/Puppeteer pada laptop ini (lihat log).');
+            }
+
+            // refresh data pdf setelah generate
+            $tesPdf = TesPdf::with('upload')->where('tes_id', $tes->id)->first();
         }
 
-        // 🔥 PERBAIKAN DI SINI
+        if (!$tesPdf || !$tesPdf->upload) {
+            return redirect()
+                ->route('siswa.tes.hasil')
+                ->withErrors('PDF belum tersedia. Silakan coba lagi.');
+        }
+
         $filePath = storage_path('app/public/' . $tesPdf->upload->storage_path);
 
         if (!file_exists($filePath)) {
-            return back()->withErrors('File tidak ditemukan di server.');
+            return redirect()
+                ->route('siswa.tes.hasil')
+                ->withErrors('File PDF tidak ditemukan di server: ' . $tesPdf->upload->storage_path);
         }
 
-        return response()->download($filePath);
+        return response()->download($filePath, 'hasil_tes_' . $tes->id . '.pdf');
     }
 
-    private function generateAndStorePdf($tes)
+    private function generateAndStorePdf($tes): bool
     {
         $hasilList = HasilSaw::where('tes_id', $tes->id)
             ->with('jurusan')
@@ -272,24 +295,53 @@ class SpkController extends Controller
         $html = view('pages.siswa.hasil-pdf', [
             'siswa'       => $siswa,
             'tesTerakhir' => $tes,
-            'hasilList'   => $hasilList
+            'hasilList'   => $hasilList,
         ])->render();
 
         $fileName     = 'hasil_tes_' . $tes->id . '.pdf';
         $relativePath = 'hasil_pdf/' . $fileName;
         $absolutePath = storage_path('app/public/' . $relativePath);
 
-        if (!is_dir(dirname($absolutePath))) {
-            mkdir(dirname($absolutePath), 0755, true);
-        }
+        $dir = dirname($absolutePath);
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
 
-        Browsershot::html($html)
-            ->format('A4')
-            ->margins(10, 10, 10, 10)
-            ->showBackground()
-            ->emulateMedia('screen')
-            // ->waitUntilNetworkIdle() // kalau sering bermasalah, matikan ini
-            ->save($absolutePath);
+        // ✅ ambil dari CONFIG (anti masalah config cache)
+        $chromePath = config('browsershot.chrome_path');
+
+        try {
+            $b = Browsershot::html($html)
+                ->format('A4')
+                ->margins(10, 10, 10, 10)
+                ->showBackground()
+                ->emulateMedia('screen')
+                ->noSandbox();
+
+            // ✅ paksa chrome lokal kalau ada
+            if ($chromePath && file_exists($chromePath)) {
+                $b->setChromePath($chromePath);
+            } else {
+                Log::warning('BROWSERSHOT_CHROME_PATH tidak valid / tidak ditemukan', [
+                    'chromePath' => $chromePath,
+                ]);
+            }
+
+            $b->save($absolutePath);
+
+            if (!file_exists($absolutePath) || filesize($absolutePath) === 0) {
+                Log::error('PDF tidak terbentuk / 0 byte', ['path' => $absolutePath]);
+                return false;
+            }
+
+        } catch (\Throwable $e) {
+            if (file_exists($absolutePath)) @unlink($absolutePath);
+
+            Log::error('Browsershot gagal generate PDF', [
+                'chromePath' => $chromePath,
+                'message'    => $e->getMessage(),
+            ]);
+
+            return false;
+        }
 
         $sizeBytes = filesize($absolutePath) ?: 0;
         $sizeMb = round($sizeBytes / 1024 / 1024, 2);
@@ -305,11 +357,10 @@ class SpkController extends Controller
 
         TesPdf::updateOrCreate(
             ['tes_id' => $tes->id],
-            [
-                'upload_id'    => $upload->id,
-                'generated_at' => now(),
-            ]
+            ['upload_id' => $upload->id, 'generated_at' => now()]
         );
+
+        return true;
     }
 
     public function history()

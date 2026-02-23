@@ -1,6 +1,7 @@
 @php
     $isSpkPage = request()->routeIs('siswa.tes.*');
     $isLanding = request()->routeIs('landing.home');
+    $isProfile = request()->routeIs('siswa.profile*');
 @endphp
 
 <!-- {{-- TOP INFO BAR --}}
@@ -41,8 +42,7 @@
             {{-- DESKTOP NAV --}}
             <nav class="hidden md:flex items-center gap-1">
                 <a href="{{ route('landing.home') }}" class="nav-link-custom {{ $isLanding ? 'active' : '' }}">Beranda</a>
-                <a href="#profil" class="nav-link-custom">Profil</a>
-
+                <a href="{{ route('siswa.profile') }}" class="nav-link-custom {{ $isProfile ? 'active' : '' }}">Profil</a>
                 <div class="relative group">
                     <button type="button" class="nav-link-custom flex items-center gap-1 {{ $isSpkPage ? 'active' : '' }}">
                         SPK Jurusan

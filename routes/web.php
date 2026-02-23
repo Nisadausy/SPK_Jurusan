@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Siswa\SpkController;
+use App\Http\Controllers\Siswa\ProfileController;
 
 // Landing (public)
 Route::get('/', fn () => view('landingpage.home'))->name('landing.home');
@@ -47,5 +48,18 @@ Route::prefix('siswa')->name('siswa.')->middleware('auth')->group(function () {
     Route::get('/history', [SpkController::class, 'history'])->name('history');
     Route::get('/tes/{tes}/hasil', [SpkController::class, 'hasilByTes'])->name('tes.hasil.show');
     Route::get('/tes/{tes}/pdf',  [SpkController::class, 'cetakPdfByTes'])->name('tes.pdf.download');
+
+// =========================
+        // PROFILE SISWA
+        // =========================
+        Route::get('/profile', [ProfileController::class, 'index'])
+            ->name('profile');
+
+        Route::put('/profile/update', [ProfileController::class, 'update'])
+            ->name('profile.update');
+
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])
+            ->name('profile.password');
+
 });
 

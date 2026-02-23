@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
 
             AdminSeeder::class,
             SoalMinatSeeder::class,
+            JurusanSeeder::class,
         ]);
     }
 }
