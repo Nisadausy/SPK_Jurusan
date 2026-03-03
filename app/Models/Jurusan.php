@@ -15,18 +15,6 @@ class Jurusan extends Model
         return $this->hasMany(GuruBk::class);
     }
 
-    public function artikel()
-    {
-        return $this->hasMany(ArtikelJurusan::class);
-    }
-
-    public function informasi()
-    {
-        return $this->hasOne(InformasiJurusan::class);
-    }
-
-    public function prospekKerja()
-    {
-        return $this->hasMany(ProspekKerja::class);
-    }
-}
+    public function informasiJurusan() { return $this->hasOne(InformasiJurusan::class); }
+    public function prospekKerja()     { return $this->hasMany(ProspekKerja::class); }
+    public function artikelJurusan()   { return $this->hasMany(ArtikelJurusan::class); }}

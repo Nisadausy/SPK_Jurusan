@@ -25,11 +25,10 @@ class User extends Authenticatable
     ];
 
     // Laravel Auth default cari kolom "password", jadi kita arahkan ke "password_hash"
-    public function getAuthPasswordName(): string
+    public function getAuthPassword(): string
     {
-        return 'password_hash';
-    }
-
+    return $this->password_hash;
+    }   
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id'); // owner key default roles.id
