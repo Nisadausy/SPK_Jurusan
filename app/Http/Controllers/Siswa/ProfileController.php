@@ -30,39 +30,35 @@ class ProfileController extends Controller
      * Update data profil (email, no_telepon, sekolah_asal, jenis_kelamin)
      * nama diambil dari users.name
      */
-    public function update(Request $request)
-    {
-        $user  = Auth::user();
-        $siswa = Siswa::where('user_id', $user->id)->first();
+ public function update(Request $request)
+{
+    $user  = Auth::user();
+    $siswa = Siswa::where('user_id', $user->user_id)->first();
 
-        $request->validate([
-            'name'          => 'required|string|max:100',
-            'email'         => 'required|email|unique:users,email,' . $user->id,
-            'no_telepon'    => 'nullable|string|max:30',
-            'sekolah_asal'  => 'nullable|string|max:150',
-            'jenis_kelamin' => 'nullable|in:L,P',
-        ], [
-            'name.required'  => 'Nama lengkap wajib diisi.',
-            'email.required' => 'Email wajib diisi.',
-            'email.unique'   => 'Email sudah digunakan akun lain.',
-        ]);
+    $request->validate([
+        'nama'          => 'required|string|max:120',
+        'email'         => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
+        'no_telepon'    => 'nullable|string|max:30',
+        'sekolah_asal'  => 'nullable|string|max:150',
+        'jenis_kelamin' => 'nullable|in:L,P',
+    ]);
 
-        // Update tabel users
-        $user->update([
-            'name'  => $request->name,
-            'email' => $request->email,
-        ]);
+    // update tabel users
+    $user->update([
+        'nama'  => $request->nama,
+        'email' => $request->email,
+    ]);
 
-        // Update tabel siswa
-        $siswa->update([
-            'no_telepon'    => $request->no_telepon,
-            'sekolah_asal'  => $request->sekolah_asal,
-            'jenis_kelamin' => $request->jenis_kelamin,
-        ]);
+    // update tabel siswa
+    $siswa->update([
+        'no_telepon'    => $request->no_telepon,
+        'sekolah_asal'  => $request->sekolah_asal,
+        'jenis_kelamin' => $request->jenis_kelamin,
+    ]);
 
-        return redirect()->route('siswa.profile')
-                         ->with('success', 'Profil berhasil diperbarui!');
-    }
+    return redirect()->route('siswa.profile')
+                     ->with('success', 'Profil berhasil diperbarui!');
+}
 
     /**
      * Ubah password

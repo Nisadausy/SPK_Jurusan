@@ -57,7 +57,7 @@
                     </div>
                 </div>
 
-                <a href="#artikel" class="nav-link-custom">Artikel</a>
+                <a href="{{ route('artikel.index') }}" class="nav-link-custom {{ request()->routeIs('artikel.*') ? 'active' : '' }}">Artikel</a>
                 <a href="#kontak" class="nav-link-custom">Kontak</a>
 
                 @auth

@@ -13,4 +13,19 @@ class ProfilController extends Controller
         $guruBk = GuruBk::with('jurusan')->where('user_id', $user->id)->firstOrFail();
         return view('pages.bk.profil', compact('user', 'guruBk'));
     }
+
+    public function update(Request $request)
+{
+    $user = Auth::user();
+    $request->validate([
+        'nama'  => 'required|string|max:120',
+        'email' => 'required|email|unique:users,email,'.$user->id,
+    ]);
+    $user->update([
+        'nama'        => $request->nama,
+        'email'       => $request->email,
+        'no_telepon'  => $request->no_telepon,
+    ]);
+    return redirect()->route('bk.profil')->with('success', 'Profil berhasil diperbarui!');
+}
 }

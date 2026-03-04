@@ -5,7 +5,15 @@ use App\Http\Controllers\Siswa\SpkController;
 use App\Http\Controllers\Siswa\ProfileController;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-
+use App\Http\Controllers\Admin\DashboardController     as AdminDashboard;
+use App\Http\Controllers\Admin\GuruBkController        as AdminGuruBk;
+use App\Http\Controllers\Admin\SiswaAdminController    as AdminSiswa;
+use App\Http\Controllers\Admin\StatusController        as AdminStatus;
+use App\Http\Controllers\Admin\JurusanAdminController  as AdminJurusan;
+use App\Http\Controllers\Admin\ArtikelAdminController  as AdminArtikel;
+use App\Http\Controllers\Admin\InfoJurusanAdminController as AdminInfoJurusan;
+use App\Http\Controllers\Admin\MonitoringController    as AdminMonitoring;
+use App\Http\Controllers\ArtikelPublikController;
 
 Route::get('/reset-admin', function () {
     DB::table('users')
@@ -29,6 +37,10 @@ use App\Http\Controllers\Bk\PasswordController  as BkPasswordController;
 // Landing (public)
 Route::get('/', fn () => view('landingpage.home'))->name('landing.home');
 
+// Artikel publik
+Route::get('/artikel', [ArtikelPublikController::class, 'index'])->name('artikel.index');
+Route::get('/artikel/{id}', [ArtikelPublikController::class, 'show'])->name('artikel.show');
+
 // Breeze routes (login/register/logout/forgot/etc)
 require __DIR__ . '/auth.php';
 
@@ -41,15 +53,59 @@ Route::get('/landingpage', fn () => redirect()->route('landing.home'))->name('la
  * Admin
  */
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
-    Route::get('/dashboard', fn () => view('admin.dashboard'))->name('dashboard');
-    
-    Route::get('/guru-bk', fn () => 'index guru bk')->name('gurubk.index');
-    Route::get('/siswa', fn () => 'index siswa')->name('siswa.index');
-    Route::get('/status', fn () => 'status index')->name('status.index');
-    Route::get('/jurusan', fn () => 'jurusan index')->name('jurusan.index');
-    Route::get('/artikel', fn () => 'artikel index')->name('artikel.index');
-    Route::get('/informasi-jurusan', fn () => 'info jurusan index')->name('infojurusan.index');
-    Route::get('/monitoring', fn () => 'monitoring index')->name('monitoring.index');
+
+    // FR-A-01: Dashboard
+    Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+
+    // FR-A-02~05: Kelola Akun Guru BK
+    Route::get   ('/guru-bk',              [AdminGuruBk::class, 'index'])       ->name('gurubk.index');
+    Route::get   ('/guru-bk/create',       [AdminGuruBk::class, 'create'])      ->name('gurubk.create');
+    Route::post  ('/guru-bk',              [AdminGuruBk::class, 'store'])       ->name('gurubk.store');
+    Route::get   ('/guru-bk/{id}/edit',    [AdminGuruBk::class, 'edit'])        ->name('gurubk.edit');
+    Route::put   ('/guru-bk/{id}',         [AdminGuruBk::class, 'update'])      ->name('gurubk.update');
+    Route::patch ('/guru-bk/{id}/status',  [AdminGuruBk::class, 'toggleStatus'])->name('gurubk.status');
+
+    // FR-A-05~06: Kelola Akun Siswa
+    Route::get   ('/siswa',                [AdminSiswa::class, 'index'])        ->name('siswa.index');
+    Route::get   ('/siswa/{id}/edit',      [AdminSiswa::class, 'edit'])         ->name('siswa.edit');
+    Route::put   ('/siswa/{id}',           [AdminSiswa::class, 'update'])       ->name('siswa.update');
+    Route::patch ('/siswa/{id}/status',    [AdminSiswa::class, 'toggleStatus']) ->name('siswa.status');
+
+    // FR-A-07: Status Siswa & Guru BK
+    Route::get   ('/status',               [AdminStatus::class, 'index'])       ->name('status.index');
+    Route::patch ('/status/siswa/{id}',    [AdminStatus::class, 'toggleSiswa']) ->name('status.siswa');
+    Route::patch ('/status/guru/{id}',     [AdminStatus::class, 'toggleGuru'])  ->name('status.guru');
+
+    // FR-A-08: Kelola Jurusan
+    Route::get   ('/jurusan',              [AdminJurusan::class, 'index'])       ->name('jurusan.index');
+    Route::get   ('/jurusan/create',       [AdminJurusan::class, 'create'])      ->name('jurusan.create');
+    Route::post  ('/jurusan',              [AdminJurusan::class, 'store'])        ->name('jurusan.store');
+    Route::get   ('/jurusan/{id}/edit',    [AdminJurusan::class, 'edit'])         ->name('jurusan.edit');
+    Route::put   ('/jurusan/{id}',         [AdminJurusan::class, 'update'])       ->name('jurusan.update');
+    Route::patch ('/jurusan/{id}/status',  [AdminJurusan::class, 'toggleStatus']) ->name('jurusan.status');
+
+    // FR-A-09: Kelola Artikel
+    Route::get   ('/artikel',              [AdminArtikel::class, 'index'])   ->name('artikel.index');
+    Route::get   ('/artikel/{id}/edit',    [AdminArtikel::class, 'edit'])    ->name('artikel.edit');
+    Route::put   ('/artikel/{id}',         [AdminArtikel::class, 'update'])  ->name('artikel.update');
+    Route::delete('/artikel/{id}',         [AdminArtikel::class, 'destroy']) ->name('artikel.destroy');
+
+    // FR-A-10: Kelola Info Jurusan
+    Route::get   ('/informasi-jurusan',           [AdminInfoJurusan::class, 'index'])  ->name('infojurusan.index');
+    Route::get   ('/informasi-jurusan/{jurusanId}/edit', 
+    [AdminInfoJurusan::class, 'edit']
+    )->name('infojurusan.edit');
+
+    Route::put   ('/informasi-jurusan/{jurusanId}', 
+    [AdminInfoJurusan::class, 'update']
+    )->name('infojurusan.update');
+
+    Route::delete('/informasi-jurusan/{jurusanId}', 
+    [AdminInfoJurusan::class, 'destroy']
+    )->name('infojurusan.destroy');
+
+    // FR-A-11: Monitoring
+    Route::get('/monitoring', [AdminMonitoring::class, 'index'])->name('monitoring.index');
 });
 
 /**
@@ -88,6 +144,7 @@ Route::prefix('bk')->name('bk.')->middleware('auth')->group(function () {
 
         // FR-BK-04: Profil
         Route::get('/profil', [BkProfilController::class, 'index'])->name('profil');
+        Route::put('/profil/update', [BkProfilController::class, 'update'])->name('profil.update');
     });
 });
 

@@ -17,7 +17,7 @@ class ArtikelController extends Controller
 
     public function create()
     {
-        $jurusans = Jurusan::orderBy('nama')->get();
+        $jurusans = Jurusan::orderBy('nama_jurusan')->get();
         return view('pages.bk.artikel.create', compact('jurusans'));
     }
 
@@ -46,7 +46,7 @@ class ArtikelController extends Controller
     public function edit($id)
     {
         $artikel  = ArtikelJurusan::with(['jurusan', 'gambarUpload', 'fileUpload'])->findOrFail($id);
-        $jurusans = Jurusan::orderBy('nama')->get();
+        $jurusans = Jurusan::orderBy('nama_jurusan')->get();
         return view('pages.bk.artikel.edit', compact('artikel', 'jurusans'));
     }
 
@@ -86,17 +86,29 @@ class ArtikelController extends Controller
     }
 
     private function simpanUpload(Request $request, string $input, string $folder): ?int
-    {
-        if (!$request->hasFile($input)) return null;
-        $file   = $request->file($input);
-        $upload = Upload::create([
-            'path'          => $file->store($folder, 'public'),
-            'mime_type'     => $file->getMimeType(),
-            'original_name' => $file->getClientOriginalName(),
-            'size'          => $file->getSize(),
-        ]);
-        return $upload->id;
-    }
+{
+    if (!$request->hasFile($input)) return null;
+
+    $file = $request->file($input);
+
+    // Tentukan ext berdasarkan mime
+    $mime = $file->getMimeType();
+    if (str_contains($mime, 'pdf'))       $ext = 'PDF';
+    elseif (str_contains($mime, 'mp4'))   $ext = 'MP4';
+    elseif (str_contains($mime, 'jpeg'))  $ext = 'JPG';
+    else                                  $ext = 'JPG';
+
+    $upload = Upload::create([
+        'uploader_user_id' => auth()->id(),
+        'file_name'        => $file->getClientOriginalName(),
+        'ext'              => $ext,
+        'mime_type'        => $mime,
+        'size_mb'          => round($file->getSize() / 1048576, 2),
+        'storage_path'     => $file->store($folder, 'public'),
+    ]);
+
+    return $upload->id;
+}
 
     private function hapusUpload(?int $uploadId): void
     {

@@ -5,7 +5,6 @@
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-/* ── Sembunyikan header/footer dari layout ── */
 header, .main-header, #mobile-menu, footer, .footer { display:none !important; }
 main { padding-top:0 !important; margin-top:0 !important; }
 body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !important; }
@@ -20,20 +19,23 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
 .bg-glow  { position:fixed; top:-200px; left:-200px; width:700px; height:700px; background:radial-gradient(ellipse,rgba(244,185,66,.08) 0%,transparent 70%); pointer-events:none; z-index:0; }
 .bg-glow2 { position:fixed; bottom:-150px; right:-150px; width:500px; height:500px; background:radial-gradient(ellipse,rgba(224,123,84,.07) 0%,transparent 70%); pointer-events:none; z-index:0; }
 
-.pc { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:48px 20px 80px; }
+/* BACK BAR */
+.back-bar { position:sticky; top:0; z-index:100; background:rgba(13,15,20,.92); backdrop-filter:blur(12px); border-bottom:1px solid rgba(255,255,255,.06); padding:10px 20px; display:flex; align-items:center; justify-content:space-between; }
+.back-btn-top { display:inline-flex; align-items:center; gap:7px; background:rgba(244,185,66,.1); border:1.5px solid rgba(244,185,66,.25); color:var(--accent); font-size:12px; font-weight:700; padding:7px 16px; border-radius:9px; text-decoration:none; transition:all .2s; }
+.back-btn-top:hover { background:rgba(244,185,66,.18); transform:translateX(-2px); }
+.back-bar-title { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:rgba(255,255,255,.5); }
 
-/* HEADER */
+.pc { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:36px 20px 80px; }
+
 .pg-head  { text-align:center; margin-bottom:38px; animation:fadeDown .6s ease both; }
 .hd-badge { display:inline-flex; align-items:center; gap:7px; background:rgba(244,185,66,.11); border:1px solid rgba(244,185,66,.25); color:var(--accent); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:5px 16px; border-radius:100px; margin-bottom:14px; }
 .pg-title { font-family:'Playfair Display',serif; font-size:clamp(1.9rem,5vw,2.8rem); font-weight:900; background:linear-gradient(135deg,#f4b942 20%,#e8eaf0 65%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; line-height:1.2; }
 .pg-sub   { color:var(--text-dim); font-size:13px; }
 
-/* ALERT */
 .alert-ok  { background:rgba(92,184,92,.08); border:1px solid rgba(92,184,92,.3); border-left:3px solid var(--green); border-radius:10px; padding:12px 16px; font-size:13px; color:#7dcc7d; margin-bottom:18px; display:flex; align-items:center; gap:9px; }
 .alert-err { background:rgba(224,84,84,.08); border:1px solid rgba(224,84,84,.3); border-left:3px solid var(--danger); border-radius:10px; padding:12px 16px; font-size:12px; color:#f08080; margin-bottom:18px; line-height:1.7; }
 .alert-err ul { padding-left:16px; margin-top:5px; }
 
-/* HERO CARD */
 .hero-card { background:linear-gradient(145deg,#0f1825,#152038); border:1px solid var(--border); border-radius:var(--radius); padding:28px 30px; margin-bottom:20px; position:relative; overflow:hidden; animation:fadeIn .5s ease both; box-shadow:0 8px 36px rgba(0,0,0,.4); }
 .hero-card::before { content:''; position:absolute; top:-60px; right:-60px; width:200px; height:200px; border-radius:50%; background:rgba(244,185,66,.04); }
 .hero-card::after  { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent)); }
@@ -52,7 +54,6 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
 .tab-btn:hover  { border-color:rgba(244,185,66,.5); color:var(--accent); }
 .tab-btn.active { border-color:var(--accent); background:rgba(244,185,66,.1); color:var(--accent); }
 
-/* DATA VIEW */
 .data-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:13px; margin-bottom:20px; }
 .data-item { background:var(--surface); border:1px solid var(--border); border-radius:13px; padding:18px 20px; display:flex; align-items:center; gap:14px; transition:all .2s; }
 .data-item:hover { border-color:rgba(244,185,66,.2); transform:translateY(-2px); }
@@ -65,7 +66,6 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
 .d-val { font-size:14px; font-weight:700; color:var(--text); }
 .d-val.na { color:var(--text-dim); font-style:italic; font-weight:400; font-size:13px; }
 
-/* CARD */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:0 4px 30px rgba(0,0,0,.3); }
 .card-head { background:linear-gradient(135deg,#0f1520,#162038); border-bottom:1px solid var(--border); padding:20px 26px; position:relative; overflow:hidden; }
 .card-head::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(244,185,66,.04); }
@@ -105,7 +105,7 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
 .btn-save { padding:11px 28px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#111; background:linear-gradient(135deg,var(--accent),var(--accent2)); cursor:pointer; transition:all .22s; font-family:'DM Sans',sans-serif; box-shadow:0 4px 16px rgba(244,185,66,.25); }
 .btn-save:hover { transform:translateY(-2px); box-shadow:0 8px 26px rgba(244,185,66,.4); }
 .btn-save:disabled { opacity:.6; cursor:not-allowed; transform:none; }
-.btn-back { padding:11px 20px; border:1.5px solid var(--border); border-radius:10px; font-size:13px; font-weight:600; color:var(--text-dim); background:transparent; cursor:pointer; transition:all .2s; font-family:'DM Sans',sans-serif; text-decoration:none; display:inline-flex; align-items:center; }
+.btn-back { padding:11px 20px; border:1.5px solid var(--border); border-radius:10px; font-size:13px; font-weight:600; color:var(--text-dim); background:transparent; cursor:pointer; transition:all .2s; font-family:'DM Sans',sans-serif; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
 .btn-back:hover { border-color:var(--accent); color:var(--accent); }
 
 .tab-panel { display:none; }
@@ -134,7 +134,7 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
 
 @section('content')
 @php
-    $namaUser    = Auth::user()->name ?? 'Siswa';
+    $namaUser    = Auth::user()->nama ?? 'Siswa';
     $emailUser   = Auth::user()->email ?? '';
     $inisial     = strtoupper(substr($namaUser, 0, 1));
     $gender      = $siswa->jenis_kelamin ?? null;
@@ -145,6 +145,15 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
 <div class="pw">
 <div class="bg-glow"></div>
 <div class="bg-glow2"></div>
+
+{{-- ═══ BACK BAR ═══ --}}
+<div class="back-bar">
+    <a href="{{ route('landing.home') }}" class="back-btn-top">
+        ← Kembali ke Beranda
+    </a>
+    <div class="back-bar-title">Profil Saya</div>
+    <div style="width:160px;"></div>{{-- spacer biar title center --}}
+</div>
 
 <div class="pc">
 
@@ -196,50 +205,33 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
         <div class="data-grid">
             <div class="data-item">
                 <div class="d-icon ic-gld">👤</div>
-                <div>
-                    <div class="d-lbl">Nama Lengkap</div>
-                    <div class="d-val">{{ Auth::user()->name ?? '-' }}</div>
-                </div>
+                <div><div class="d-lbl">Nama Lengkap</div><div class="d-val">{{ Auth::user()->nama ?? '-' }}</div></div>
             </div>
             <div class="data-item">
                 <div class="d-icon ic-blu">✉️</div>
-                <div>
-                    <div class="d-lbl">Email</div>
-                    <div class="d-val">{{ Auth::user()->email ?? '-' }}</div>
-                </div>
+                <div><div class="d-lbl">Email</div><div class="d-val">{{ Auth::user()->email ?? '-' }}</div></div>
             </div>
             <div class="data-item">
                 <div class="d-icon ic-grn">📞</div>
-                <div>
-                    <div class="d-lbl">No. Telepon</div>
-                    <div class="d-val {{ !$siswa->no_telepon ? 'na' : '' }}">
-                        {{ $siswa->no_telepon ?? 'Belum diisi' }}
-                    </div>
-                </div>
+                <div><div class="d-lbl">No. Telepon</div><div class="d-val {{ !$siswa->no_telepon ? 'na' : '' }}">{{ $siswa->no_telepon ?? 'Belum diisi' }}</div></div>
             </div>
             <div class="data-item">
                 <div class="d-icon ic-org">🏫</div>
-                <div>
-                    <div class="d-lbl">Sekolah Asal</div>
-                    <div class="d-val {{ !$siswa->sekolah_asal ? 'na' : '' }}">
-                        {{ $siswa->sekolah_asal ?? 'Belum diisi' }}
-                    </div>
-                </div>
+                <div><div class="d-lbl">Sekolah Asal</div><div class="d-val {{ !$siswa->sekolah_asal ? 'na' : '' }}">{{ $siswa->sekolah_asal ?? 'Belum diisi' }}</div></div>
             </div>
             <div class="data-item full">
                 <div class="d-icon ic-pur">⚧️</div>
-                <div>
-                    <div class="d-lbl">Jenis Kelamin</div>
-                    <div class="d-val {{ !$siswa->jenis_kelamin ? 'na' : '' }}">
-                        @if($siswa->jenis_kelamin === 'L') 👦 Laki-laki
-                        @elseif($siswa->jenis_kelamin === 'P') 👧 Perempuan
-                        @else Belum diisi
-                        @endif
-                    </div>
-                </div>
+                <div><div class="d-lbl">Jenis Kelamin</div>
+                <div class="d-val {{ !$siswa->jenis_kelamin ? 'na' : '' }}">
+                    @if($siswa->jenis_kelamin === 'L') 👦 Laki-laki
+                    @elseif($siswa->jenis_kelamin === 'P') 👧 Perempuan
+                    @else Belum diisi
+                    @endif
+                </div></div>
             </div>
         </div>
-        <div style="text-align:right">
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <a href="{{ route('landing.home') }}" class="btn-back">🏠 Kembali ke Beranda</a>
             <button class="btn-save" onclick="goTab('edit',document.querySelectorAll('.tab-btn')[1])">✏️ Edit Profil Saya</button>
         </div>
     </div>
@@ -255,36 +247,26 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
                 <form method="POST" action="{{ route('siswa.profile.update') }}">
                     @csrf
                     @method('PUT')
-
                     <div class="sec-lbl">Akun</div>
                     <div class="fgrid">
                         <div class="field">
                             <label>Nama Lengkap <span class="req">*</span></label>
-                            <input type="text" name="name"
-                                value="{{ old('name', Auth::user()->name) }}"
-                                placeholder="Nama lengkap kamu" required/>
+                            <input type="text" name="nama" value="{{ old('nama', Auth::user()->nama) }}" placeholder="Nama lengkap kamu" required/>
                         </div>
                         <div class="field">
                             <label>Email <span class="req">*</span></label>
-                            <input type="email" name="email"
-                                value="{{ old('email', Auth::user()->email) }}"
-                                placeholder="email@contoh.com" required/>
+                            <input type="email" name="email" value="{{ old('email', Auth::user()->email) }}" placeholder="email@contoh.com" required/>
                         </div>
                     </div>
-
                     <div class="sec-lbl">Data Diri</div>
                     <div class="fgrid">
                         <div class="field">
                             <label>No. Telepon</label>
-                            <input type="text" name="no_telepon"
-                                value="{{ old('no_telepon', $siswa->no_telepon ?? '') }}"
-                                placeholder="08xxxxxxxxxx"/>
+                            <input type="text" name="no_telepon" value="{{ old('no_telepon', $siswa->no_telepon ?? '') }}" placeholder="08xxxxxxxxxx"/>
                         </div>
                         <div class="field">
                             <label>Sekolah Asal</label>
-                            <input type="text" name="sekolah_asal"
-                                value="{{ old('sekolah_asal', $siswa->sekolah_asal ?? '') }}"
-                                placeholder="Nama SMP/sekolah asal kamu"/>
+                            <input type="text" name="sekolah_asal" value="{{ old('sekolah_asal', $siswa->sekolah_asal ?? '') }}" placeholder="Nama SMP/sekolah asal kamu"/>
                         </div>
                     </div>
                     <div class="fgrid full">
@@ -303,9 +285,8 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
                             </div>
                         </div>
                     </div>
-
                     <div class="btn-grp">
-                        <a href="{{ route('landing.home') }}" class="btn-back">🏠 Kembali</a>
+                        <a href="{{ route('landing.home') }}" class="btn-back">🏠 Kembali ke Beranda</a>
                         <button type="submit" class="btn-save">💾 Simpan Perubahan</button>
                     </div>
                 </form>
@@ -324,27 +305,22 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
                 <form method="POST" action="{{ route('siswa.profile.password') }}" id="pwdForm">
                     @csrf
                     @method('PUT')
-
                     <div class="sec-lbl">Password Sekarang</div>
                     <div class="fgrid full">
                         <div class="field">
                             <label>Password Lama <span class="req">*</span></label>
                             <div class="pwd-wrap">
-                                <input type="password" name="current_password" id="p-lama"
-                                    placeholder="Masukkan password lama" required/>
+                                <input type="password" name="current_password" id="p-lama" placeholder="Masukkan password lama" required/>
                                 <button type="button" class="pwd-eye" onclick="togP('p-lama',this)">👁</button>
                             </div>
                         </div>
                     </div>
-
                     <div class="sec-lbl">Password Baru</div>
                     <div class="fgrid full">
                         <div class="field">
                             <label>Password Baru <span class="req">*</span></label>
                             <div class="pwd-wrap">
-                                <input type="password" name="password" id="p-baru"
-                                    placeholder="Minimal 8 karakter" required
-                                    oninput="chkStr(this.value)"/>
+                                <input type="password" name="password" id="p-baru" placeholder="Minimal 8 karakter" required oninput="chkStr(this.value)"/>
                                 <button type="button" class="pwd-eye" onclick="togP('p-baru',this)">👁</button>
                             </div>
                             <div class="pwd-bar-wrap"><div class="pwd-bar" id="pwdBar"></div></div>
@@ -355,17 +331,14 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
                         <div class="field">
                             <label>Konfirmasi Password <span class="req">*</span></label>
                             <div class="pwd-wrap">
-                                <input type="password" name="password_confirmation" id="p-conf"
-                                    placeholder="Ulangi password baru" required
-                                    oninput="chkMatch()"/>
+                                <input type="password" name="password_confirmation" id="p-conf" placeholder="Ulangi password baru" required oninput="chkMatch()"/>
                                 <button type="button" class="pwd-eye" onclick="togP('p-conf',this)">👁</button>
                             </div>
                             <div class="fhint" id="matchHint">Harus sama dengan password baru</div>
                         </div>
                     </div>
-
                     <div class="btn-grp">
-                        <a href="{{ route('landing.home') }}" class="btn-back">🏠 Kembali</a>
+                        <a href="{{ route('landing.home') }}" class="btn-back">🏠 Kembali ke Beranda</a>
                         <button type="submit" class="btn-save" id="btnPwd">🔒 Ubah Password</button>
                     </div>
                 </form>
@@ -373,8 +346,8 @@ body { padding-top:0 !important; background:#0d0f14 !important; color:#e8eaf0 !i
         </div>
     </div>
 
-</div>{{-- /pc --}}
-</div>{{-- /pw --}}
+</div>
+</div>
 @endsection
 
 @push('scripts')

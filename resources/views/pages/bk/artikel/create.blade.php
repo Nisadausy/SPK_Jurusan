@@ -19,7 +19,7 @@
                 <select name="jurusan_id" class="form-control" required>
                     <option value="">Pilih jurusan...</option>
                     @foreach($jurusans as $j)
-                        <option value="{{ $j->id }}" {{ old('jurusan_id') == $j->id ? 'selected':'' }}>{{ $j->nama }}</option>
+                        <option value="{{ $j->id }}" {{ old('jurusan_id') == $j->id ? 'selected':'' }}>{{ $j->nama_jurusan }}</option>
                     @endforeach
                 </select>
             </div>
