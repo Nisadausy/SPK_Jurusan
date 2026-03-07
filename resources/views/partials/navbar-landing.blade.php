@@ -58,7 +58,7 @@
                 </div>
 
                 <a href="{{ route('artikel.index') }}" class="nav-link-custom {{ request()->routeIs('artikel.*') ? 'active' : '' }}">Artikel</a>
-                <a href="#kontak" class="nav-link-custom">Kontak</a>
+                <a href="{{ route('landing.home') }}#kontak" class="nav-link-custom">Kontak</a>
 
                 @auth
                     <a href="{{ url('/dashboard') }}"

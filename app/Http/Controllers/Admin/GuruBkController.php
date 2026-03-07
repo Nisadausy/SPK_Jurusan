@@ -22,7 +22,7 @@ class GuruBkController extends Controller
 
     public function create()
     {
-        $jurusans = Jurusan::where('is_active', true)->orderBy('nama')->get();
+        $jurusans = Jurusan::where('is_active', true)->orderBy('nama_jurusan')->get();
         return view('pages.admin.gurubk.create', compact('jurusans'));
     }
 
@@ -35,7 +35,7 @@ class GuruBkController extends Controller
             'jurusan_id'  => 'nullable|exists:jurusan,id',
         ]);
 
-        $roleId = \App\Models\Role::where('nama', 'guru_bk')->value('id');
+        $roleId = \App\Models\Role::where('nama_role', 'guru_bk')->value('id');
 
         $user = User::create([
             'role_id'              => $roleId,
@@ -59,7 +59,7 @@ class GuruBkController extends Controller
     public function edit($id)
     {
         $guruBk   = GuruBk::with(['user', 'jurusan'])->findOrFail($id);
-        $jurusans = Jurusan::where('is_active', true)->orderBy('nama')->get();
+        $jurusans = Jurusan::where('is_active', true)->orderBy('nama_jurusan')->get();
         return view('pages.admin.gurubk.edit', compact('guruBk', 'jurusans'));
     }
 

@@ -160,10 +160,10 @@
                     <p class="text-blue-100 text-sm md:text-base leading-relaxed mb-7 max-w-lg">
                         Pilih dari TKJ, DKV, TKR, TSM, TITL, dan lainnya. Semua dirancang untuk mencetak lulusan kompeten dan siap kerja.
                     </p>
-                    <a href="#" class="hero-cta-primary px-7 py-3 rounded-xl text-sm inline-block">
+                    <a href="#program-keahlian" class="hero-cta-primary px-7 py-3 rounded-xl text-sm inline-block">
                         Lihat Semua Jurusan →
                     </a>
-                </div>
+                     </div>
             </div>
         </div>
 
@@ -180,9 +180,11 @@
                 <p class="text-blue-100 text-sm md:text-base mb-8 max-w-2xl mx-auto">
                     Cek jurusanmu sekarang dan gunakan fitur SPK untuk mendapatkan rekomendasi jurusan terbaik.
                 </p>
+                @guest
                 <a href="{{ route('register') }}" class="hero-cta-primary px-8 py-3.5 rounded-xl text-sm inline-block font-bold">
                     Registrasi Sekarang !
                 </a>
+@endguest
             </div>
         </div>
 
@@ -217,7 +219,7 @@
 </section>
 
 {{-- PROGRAM KEAHLIAN --}}
-<section class="py-14 px-4 bg-white">
+<section id="program-keahlian" class="py-14 px-4 bg-white">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-10 fade-in">
             <p class="text-amber-500 font-semibold text-sm mb-1">Program Unggulan</p>
@@ -228,23 +230,13 @@
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
-            @php
-                $jurusans = [
-                    ['💻', 'TKJ', 'Teknik Komputer & Jaringan', 'Instalasi & konfigurasi jaringan komputer, troubleshooting sistem.', 'bg-blue-100 text-blue-600'],
-                    ['🖥️', 'RPL', 'Rekayasa Perangkat Lunak', 'Pemrograman web, mobile, dan pengembangan software profesional.', 'bg-purple-100 text-purple-600'],
-                    ['🎨', 'MM', 'Multimedia', 'Desain grafis, video editing, animasi, dan produksi konten digital.', 'bg-pink-100 text-pink-600'],
-                    ['📊', 'AKT', 'Akuntansi & Keuangan', 'Pembukuan, laporan keuangan, perpajakan, dan manajemen bisnis.', 'bg-green-100 text-green-600'],
-                    ['🗂️', 'OTKP', 'Otomatisasi & Tata Kelola', 'Manajemen perkantoran, administrasi bisnis, dan sekretaris.', 'bg-yellow-100 text-yellow-600'],
-                    ['🛒', 'BDP', 'Bisnis Daring & Pemasaran', 'E-commerce, digital marketing, manajemen toko dan distribusi.', 'bg-orange-100 text-orange-600'],
-                ];
-            @endphp
 
-            @foreach($jurusans as $j)
+           @foreach($jurusans as $j)
             <div class="jurusan-card shadow-sm fade-in p-5">
-                <div class="jurusan-icon {{ $j[4] }} mb-4">{{ $j[0] }}</div>
-                <div class="text-xs font-bold text-gray-400 mb-1">{{ $j[1] }}</div>
-                <h3 class="font-bold text-gray-900 text-sm md:text-base leading-tight mb-2">{{ $j[2] }}</h3>
-                <p class="text-xs text-gray-500 leading-relaxed mb-4">{{ $j[3] }}</p>
+                <div class="jurusan-icon bg-blue-100 text-blue-600 mb-4">🏫</div>
+                <h3 class="font-bold text-gray-900 text-sm md:text-base leading-tight mb-2">
+                    {{ $j->nama_jurusan }}
+                </h3>
                 <a href="#" class="text-xs text-blue-700 font-semibold hover:underline">Lihat Detail →</a>
             </div>
             @endforeach

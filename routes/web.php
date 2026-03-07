@@ -35,7 +35,7 @@ use App\Http\Controllers\Bk\ProfilController    as BkProfilController;
 use App\Http\Controllers\Bk\PasswordController  as BkPasswordController;
 
 // Landing (public)
-Route::get('/', fn () => view('landingpage.home'))->name('landing.home');
+Route::get('/', [App\Http\Controllers\LandingController::class, 'index'])->name('landing.home');
 
 // Artikel publik
 Route::get('/artikel', [ArtikelPublikController::class, 'index'])->name('artikel.index');
@@ -118,14 +118,14 @@ Route::prefix('bk')->name('bk.')->middleware('auth')->group(function () {
     Route::put ('/password/update', [BkPasswordController::class, 'update'])->name('password.update');
 
     // Semua route lain kena middleware ForcePasswordChange
-    Route::middleware('force.password.change')->group(function () {
-
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::middleware('force.password.change')->group(function ()       {
+    Route::get('/siswa/{siswaId}/tes/{tesId}/hasil', [BkSiswaController::class, 'hasilTes'])->name('siswa.hasil');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // FR-BK-05: Data siswa (read-only)
         Route::get('/siswa',      [BkSiswaController::class, 'index'])->name('siswa.index');
         Route::get('/siswa/{id}', [BkSiswaController::class, 'show']) ->name('siswa.show');
-
+        Route::get('/siswa/{siswaId}/tes/{tesId}/pdf', [BkSiswaController::class, 'downloadPdf'])->name('siswa.pdf');
         // FR-BK-06: Statistik
         Route::get('/statistik', [StatistikController::class, 'index'])->name('statistik');
 

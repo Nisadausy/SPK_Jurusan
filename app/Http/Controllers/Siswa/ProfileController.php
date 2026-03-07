@@ -33,11 +33,14 @@ class ProfileController extends Controller
  public function update(Request $request)
 {
     $user  = Auth::user();
-    $siswa = Siswa::where('user_id', $user->user_id)->first();
+    $siswa = Siswa::where('user_id', $user->id)->firstOrCreate(
+    ['user_id' => $user->id],
+    ['no_telepon' => null, 'sekolah_asal' => null, 'jenis_kelamin' => null]
+);
 
     $request->validate([
         'nama'          => 'required|string|max:120',
-        'email'         => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
+        'email' => 'required|email|unique:users,email,' . $user->id,
         'no_telepon'    => 'nullable|string|max:30',
         'sekolah_asal'  => 'nullable|string|max:150',
         'jenis_kelamin' => 'nullable|in:L,P',
@@ -69,7 +72,7 @@ class ProfileController extends Controller
 
         $request->validate([
             'current_password' => ['required', function ($attr, $value, $fail) use ($user) {
-                if (!Hash::check($value, $user->password)) {
+                if (!Hash::check($value, $user->password_hash)) {
                     $fail('Password lama tidak sesuai.');
                 }
             }],
@@ -80,7 +83,7 @@ class ProfileController extends Controller
         ]);
 
         $user->update([
-            'password' => Hash::make($request->password),
+            'password_hash' => Hash::make($request->password),
         ]);
 
         return redirect()->route('siswa.profile')

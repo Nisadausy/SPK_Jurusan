@@ -31,14 +31,20 @@
             </div>
 
             <div style="margin-bottom:16px;">
-                <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:7px;">Jurusan</label>
-                <select name="jurusan_id" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;padding:10px 14px;outline:none;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'">
-                    <option value="">-- Belum Ditentukan --</option>
-                    @foreach($jurusans as $j)
-                        <option value="{{ $j->id }}" {{ old('jurusan_id', $guruBk->jurusan_id) == $j->id ? 'selected' : '' }}>{{ $j->nama }}</option>
-                    @endforeach
-                </select>
-            </div>
+    <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:6px;">
+        Jurusan
+    </label>
+
+    <select name="jurusan_id" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;padding:8px;">
+        
+        @foreach($jurusans as $j)
+            <option value="{{ $j->id }}" {{ old('jurusan_id', $guruBk->jurusan_id) == $j->id ? 'selected' : '' }}>
+                {{ $j->nama_jurusan }}
+            </option>
+        @endforeach
+
+    </select>
+</div>
 
             <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:14px 16px;margin-bottom:16px;">
                 <div style="font-size:11.5px;font-weight:700;color:#92400e;margin-bottom:8px;">🔒 Reset Password (FR-A-04)</div>

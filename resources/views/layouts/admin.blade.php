@@ -408,11 +408,11 @@
             <span class="sb-icon">👨‍🎓</span> Akun Siswa
         </a>
 
-        <div class="sb-sec">Kelola Status</div>
+        {{-- <div class="sb-sec">Kelola Status</div>
         <a href="{{ route('admin.status.index') }}"
            class="sb-link {{ request()->routeIs('admin.status.*') ? 'active' : '' }}">
             <span class="sb-icon">🔘</span> Status Akun
-        </a>
+        </a> --}}
 
         <div class="sb-sec">Kelola Jurusan</div>
         <a href="{{ route('admin.jurusan.index') }}"

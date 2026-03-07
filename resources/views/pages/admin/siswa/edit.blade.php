@@ -41,10 +41,10 @@
                 <textarea name="alamat" rows="2" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;padding:10px 14px;outline:none;resize:vertical;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'">{{ old('alamat', $siswa->alamat) }}</textarea>
             </div>
 
-            <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:14px 16px;margin-bottom:16px;">
+            {{-- <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:14px 16px;margin-bottom:16px;">
                 <div style="font-size:11.5px;font-weight:700;color:#92400e;margin-bottom:8px;">🔒 Reset Password (FR-A-06)</div>
                 <input type="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah password" style="width:100%;background:#fff;border:1.5px solid #fde68a;border-radius:9px;font-size:13px;padding:10px 14px;outline:none;">
-            </div>
+            </div> --}}
 
             <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid #e2e8f0;">
                 <a href="{{ route('admin.siswa.index') }}" style="padding:9px 18px;border-radius:9px;font-size:12.5px;font-weight:700;border:1.5px solid #e2e8f0;color:#64748b;text-decoration:none;">Batal</a>

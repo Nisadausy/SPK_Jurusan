@@ -9,9 +9,9 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $totalSiswa   = Siswa::count();
-        $totalGuruBk  = GuruBk::count();
-        $totalJurusan = Jurusan::count();
+        $totalSiswa   = Siswa::whereHas('user', fn($q) => $q->where('is_active', true))->count();
+        $totalGuruBk  = GuruBk::whereHas('user', fn($q) => $q->where('is_active', true))->count();
+        $totalJurusan = Jurusan::where('is_active', true)->count();
         $totalTes     = Tes::count();
 
         $recentGuruBk = GuruBk::with('user')->latest()->take(5)->get();
