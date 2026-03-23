@@ -215,7 +215,7 @@ textarea { resize: vertical; min-height: 80px; }
             <div class="form-row">
                 <div class="form-group full">
                     <label>Nama Lengkap</label>
-                    <input type="text" name="name" value="{{ old('name') }}" placeholder="Nama sesuai rapor" required autofocus>
+                    <input type="text" name="nama" value="{{ old('nama') }}" placeholder="Nama sesuai rapor" required autofocus>
                 </div>
 
                 <div class="form-group full">
